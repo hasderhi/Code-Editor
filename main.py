@@ -1,16 +1,11 @@
 try: 
     from tkinter import *
     from tkinter import filedialog
-    from tkinter import colorchooser
     from tkinter import messagebox
     from tkinter import Toplevel, Text, WORD, END, DISABLED, Button
-    from tkinter import ttk
     import re
-    import os
     import sys
-    import pickle
-    import threading
-    import subprocess
+
 except Exception as e:
     print(f"Error importing modules: {e}")
     try:
@@ -59,13 +54,13 @@ class CodeEditor:
         self.menu_area = Frame(self.root, width=100, height=50, bg="#4d4d4d")
         self.menu_area.pack(side=TOP)
         
-        self.autoSaveEnableButton = Button(self.menu_area, width=15, height=2, text="Enable autosave", bg="#33ccff", command=self.auto_save)
+        self.autoSaveEnableButton = Button(self.menu_area, width=15, height=2, text="Enable autosave", bg="#3366cc", fg="#f0f0f0", command=self.auto_save)
         self.autoSaveEnableButton.pack(side=LEFT)
-        self.saveAsButton = Button(self.menu_area, width=10, height=2, text="Save as", bg="#33ccff", command=self.save_document)
+        self.saveAsButton = Button(self.menu_area, width=10, height=2, text="Save as", bg="#3366cc", fg="#f0f0f0", command=self.save_document)
         self.saveAsButton.pack(side=LEFT)
-        self.saveButton = Button(self.menu_area, width=10, height=2, text="Save", bg="#33ccff", command=self.save_changes)
+        self.saveButton = Button(self.menu_area, width=10, height=2, text="Save", bg="#3366cc", fg="#f0f0f0", command=self.save_changes)
         self.saveButton.pack(side=LEFT)
-        self.viewButton = Button(self.menu_area, width=10, height=2, text="View", bg="#339933")
+        self.viewButton = Button(self.menu_area, width=10, height=2, text="Zoom", bg="#339933", command=self.change_font_size)
         self.viewButton.pack(side=LEFT)
         self.runButton = Button(self.menu_area, width=10, height=2, text="Run", bg="#cc66ff")
         self.runButton.pack(side=LEFT)
@@ -175,7 +170,6 @@ class CodeEditor:
             with open(file_path, "w") as file:
                 file.write(self.text_area.get("1.0", "end-1c"))
             with open("autosave_path.pkl", "wb") as file:
-                pickle.dump(file_path, file)
                 self.current_file_path = file_path
         else:
             return
@@ -192,6 +186,21 @@ class CodeEditor:
         # Save the current document to a file
         self.save_changes()
         self.root.after(10000, self.auto_save)
+
+    def change_font_size(self):
+        # Create toplevel with slider for font size selection between 1 and 100
+        top = Toplevel(self.root)
+        top.geometry("300x100")
+        top.title("Change Font Size")
+        Label(top, text="Font Size:").pack()
+        self.slider = Scale(top, from_=1, to=100, orient=HORIZONTAL, command=self.update_font_size)
+        self.slider.set(17)
+        self.slider.pack()
+        Button(top, text="OK", command=top.destroy).pack()
+    
+    def update_font_size(self, value):
+        # Update the font size of the text area
+        self.text_area.config(font=("Arial", int(value)))
 
 
 

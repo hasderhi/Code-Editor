@@ -59,10 +59,11 @@ class CodeEditor:
         self.menu_area = Frame(self.root, width=100, height=50, bg="#4d4d4d")
         self.menu_area.pack(side=TOP)
         
-        
-        self.saveAsButton = Button(self.menu_area, width=10, height=2, text="Save as", bg="#33ccff")
+        self.autoSaveEnableButton = Button(self.menu_area, width=15, height=2, text="Enable autosave", bg="#33ccff", command=self.auto_save)
+        self.autoSaveEnableButton.pack(side=LEFT)
+        self.saveAsButton = Button(self.menu_area, width=10, height=2, text="Save as", bg="#33ccff", command=self.save_document)
         self.saveAsButton.pack(side=LEFT)
-        self.saveButton = Button(self.menu_area, width=10, height=2, text="Save", bg="#33ccff")
+        self.saveButton = Button(self.menu_area, width=10, height=2, text="Save", bg="#33ccff", command=self.save_changes)
         self.saveButton.pack(side=LEFT)
         self.viewButton = Button(self.menu_area, width=10, height=2, text="View", bg="#339933")
         self.viewButton.pack(side=LEFT)
@@ -167,6 +168,30 @@ class CodeEditor:
 
         self.root.after(100, self.update_syntax_highlighting)
 
+    def save_document(self):
+        # Save the current document to a file
+        file_path = filedialog.asksaveasfilename(defaultextension=".py", filetypes=[("Python scripts", "*.py"), ("Standard Text Files", "*.txt"), ("All Files", "*.*")], initialfile='untitled.py')
+        if file_path:
+            with open(file_path, "w") as file:
+                file.write(self.text_area.get("1.0", "end-1c"))
+            with open("autosave_path.pkl", "wb") as file:
+                pickle.dump(file_path, file)
+                self.current_file_path = file_path
+        else:
+            return
+    
+    def save_changes(self):
+        # Save the current document to a file
+        try:
+            with open(self.current_file_path, "w") as file:
+                file.write(self.text_area.get("1.0", "end-1c"))
+        except:
+            self.save_document()
+        
+    def auto_save(self):
+        # Save the current document to a file
+        self.save_changes()
+        self.root.after(10000, self.auto_save)
 
 
 

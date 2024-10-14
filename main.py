@@ -6,8 +6,6 @@ try:
     import tkinter.font as tkfont
     import re
     import sys
-
-
 except Exception as e:
     print(f"Error importing modules: {e}")
     try:
@@ -157,7 +155,7 @@ class CodeEditor:
         self.text_area.tag_config('number', foreground='#FF69B4')   # Pink
 
         self.root.after(100, self.update_syntax_highlighting)
-        
+
     def save_document(self):
         # Save the current document to a file
         file_path = filedialog.asksaveasfilename(defaultextension=".py", filetypes=[("Python scripts", "*.py"), ("Standard Text Files", "*.txt"), ("All Files", "*.*")], initialfile='untitled.py')

@@ -42,35 +42,96 @@ class CodeEditor:
         CodeEditor(root)
         root.mainloop()
 
-
+    
 
 
 
 
     def update_syntax_highlighting(self):
-        self.text_area.tag_remove('keyword', 1.0, END)
-        self.text_area.tag_remove('brace', 1.0, END)
-        self.text_area.tag_remove('variable', 1.0, END)
-        self.text_area.tag_remove('function', 1.0, END)
-        self.text_area.tag_remove('string', 1.0, END)
+        self.dev_mode = True
+        # Remove existing tags
+        for tag in ['keyword', 'comment', 'string', 'function', 'brace', 'variable', 'default', 'builtin', 'number']:
+            self.text_area.tag_remove(tag, '1.0', END)
 
-        keywords = ['class', 'def', 'if', 'else', 'elif', 'for', 'while', 'try', 'except', 'finally', 'with', 'as', 'import', 'from', 'in', 'is', 'not', 'and', 'or', 'True', 'False', 'None']
-        for keyword in keywords:
-            self.text_area.tag_add('keyword', f'1.0', f'end', regexp=f'\\b{keyword}\\b')
+        # Set default text color to white
+        self.text_area.config(fg='white')
 
-        self.text_area.tag_add('brace', 1.0, END, regexp=r'[{}()\[\]]')
+        text = self.text_area.get(1.0, END)
+        lines = text.split('\n')
 
-        self.text_area.tag_add('string', 1.0, END, regexp=r'\".*?\"')
-        self.text_area.tag_add('string', 1.0, END, regexp=r"\'.*?\'")
+        # Find all variable declarations
+        variable_declarations = []
+        for i, line in enumerate(lines):
+            for match in re.finditer(r'\b\w+(?=\s*=\s*)', line):
+                variable_declarations.append(match.group())
 
-        self.text_area.tag_add('variable', 1.0, END, regexp=r'\b[a-zA-Z_][a-zA-Z0-9_]*\b')
-        self.text_area.tag_add('function', 1.0, END, regexp=r'\b[a-zA-Z_][a-zA-Z0-9_]*\(.*?\)')
+        # Highlight variables
+        for i, line in enumerate(lines):
+            # Comments
+            for match in re.finditer(r'#.*', line):
+                start = f'{i+1}.{match.start()}'
+                end = f'{i+1}.{match.end()}'
+                self.text_area.tag_add('comment', start, end)
 
-        self.root.after(100, self.update_syntax_highlighting)
+            # Strings
+            for match in re.finditer(r'("[^"]*"|\'[^\']*\')', line):
+                start = f'{i+1}.{match.start()}'
+                end = f'{i+1}.{match.end()}'
+                self.text_area.tag_add('string', start, end)
 
+            # Keywords
+            keywords = ['and', 'as', 'assert', 'break', 'class', 'continue', 'def', 'del', 'elif', 'else', 'except', 'False', 'finally', 'for', 'from', 'global', 'if', 'import', 'in', 'is', 'lambda', 'None', 'nonlocal', 'not', 'or', 'pass', 'raise', 'return', 'True', 'try', 'while', 'with', 'yield']
+            for keyword in keywords:
+                for match in re.finditer(r'\b' + re.escape(keyword) + r'\b', line):
+                    start = f'{i+1}.{match.start()}'
+                    end = f'{i+1}.{match.end()}'
+                    self.text_area.tag_add('keyword', start, end)
 
+            # Functions
+            for match in re.finditer(r'\b\w+(?=\s*\()', line):
+                start = f'{i+1}.{match.start()}'
+                end = f'{i+1}.{match.end()}'
+                self.text_area.tag_add('function', start, end)
 
+            # Variables
+            for variable in variable_declarations:
+                for match in re.finditer(r'\b' + re.escape(variable) + r'\b', line):
+                    start = f'{i+1}.{match.start()}'
+                    end = f'{i+1}.{match.end()}'
+                    self.text_area.tag_add('variable', start, end)
 
+            # Braces
+            for match in re.finditer(r'[\(\)\[\]\{\}]', line):
+                start = f'{i+1}.{match.start()}'
+                end = f'{i+1}.{match.end()}'
+                self.text_area.tag_add('brace', start, end)
+
+            # Builtin types
+            builtins = ['int', 'str', 'float', 'dict', 'list', 'None', 'bool']
+            for builtin in builtins:
+                for match in re.finditer(r'\b' + re.escape(builtin) + r'\b', line):
+                    start = f'{i+1}.{match.start()}'
+                    end = f'{i+1}.{match.end()}'
+                    self.text_area.tag_add('builtin', start, end)
+
+            # Numbers
+            for match in re.finditer(r'\b\d+(?:\.\d+)?\b', line):
+                start = f'{i+1}.{match.start()}'
+                end = f'{i+1}.{match.end()}'
+                self.text_area.tag_add('number', start, end)
+
+        # Apply the color configurations
+        self.text_area.tag_config('keyword', foreground='#569CD6')  # Light blue
+        self.text_area.tag_config('comment', foreground='#608B4E')  # Green
+        self.text_area.tag_config('string', foreground='#CE9178')   # Orange
+        self.text_area.tag_config('function', foreground='#DCDCAA') # Yellow
+        self.text_area.tag_config('variable', foreground='#66CCCC') # Light blue-green
+        self.text_area.tag_config('brace', foreground='#D4D4D4')    # Light gray
+        self.text_area.tag_config('builtin', foreground='#9A6CD9')  # Purple
+        self.text_area.tag_config('number', foreground='#FF69B4')   # Pink
+
+        if self.dev_mode:
+            self.root.after(100, self.update_syntax_highlighting)
 
 
 
@@ -79,9 +140,12 @@ class CodeEditor:
         self.root = root
         self.root.title("Code Editor")
         self.root.geometry("800x600")
+        self.root.config(bg="#2B2B2B")
         self.root.resizable(True, True)
+
         #self.root.iconbitmap("icon.ico")
         #self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
+        
 
         self.menu_area = Frame(self.root, width=100, height=50, bg="#4d4d4d")
         self.menu_area.pack(side=TOP)
@@ -109,7 +173,5 @@ class CodeEditor:
         self.text_area.pack(fill=BOTH, expand=True)
         self.update_syntax_highlighting()
 
-    
-
-
+        
 CodeEditor.init()

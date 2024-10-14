@@ -23,11 +23,8 @@ from tkinter import colorchooser
 from tkinter import messagebox
 from tkinter import Toplevel, Text, WORD, END, DISABLED, Button
 import re
-import os
 import sys
-import pickle
-import threading
-import subprocess
+
 
 
 class CodeEditor:

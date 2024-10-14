@@ -3,8 +3,10 @@ try:
     from tkinter import filedialog
     from tkinter import messagebox
     from tkinter import Toplevel, Text, WORD, END, DISABLED, Button
+    import tkinter.font as tkfont
     import re
     import sys
+
 
 except Exception as e:
     print(f"Error importing modules: {e}")
@@ -15,17 +17,6 @@ except Exception as e:
     except Exception as e:
         print(f"Error importing modules: {e}")
         sys.exit(1)
-
-
-from tkinter import *
-from tkinter import filedialog
-from tkinter import colorchooser
-from tkinter import messagebox
-from tkinter import Toplevel, Text, WORD, END, DISABLED, Button
-import re
-import sys
-
-
 
 class CodeEditor:
 
@@ -72,6 +63,13 @@ class CodeEditor:
 
         self.text_area = Text(self.root, width=100, height=50, font=("Arial", 17), bg="#333333", fg="#f0f0f0", insertbackground="#f0f0f0", undo=True, autoseparators=True, wrap=WORD)
         self.text_area.pack(fill=BOTH, expand=True)
+        font = tkfont.Font(font=self.text_area['font']) 
+        tab_size = font.measure('       ') 
+        self.text_area.config(tabs=tab_size)
+
+
+
+
         self.update_syntax_highlighting()
 
 
@@ -152,14 +150,14 @@ class CodeEditor:
         self.text_area.tag_config('keyword', foreground='#569CD6')  # Light blue
         self.text_area.tag_config('comment', foreground='#608B4E')  # Green
         self.text_area.tag_config('string', foreground='#CE9178')   # Orange
-        self.text_area.tag_config('function', foreground='#DCDCAA') # Yellow
+        self.text_area.tag_config('function', foreground='#ffcc00') # Yellow
         self.text_area.tag_config('variable', foreground='#66CCCC') # Light blue-green
         self.text_area.tag_config('brace', foreground='#D4D4D4')    # Light gray
         self.text_area.tag_config('builtin', foreground='#9A6CD9')  # Purple
         self.text_area.tag_config('number', foreground='#FF69B4')   # Pink
 
         self.root.after(100, self.update_syntax_highlighting)
-
+        
     def save_document(self):
         # Save the current document to a file
         file_path = filedialog.asksaveasfilename(defaultextension=".py", filetypes=[("Python scripts", "*.py"), ("Standard Text Files", "*.txt"), ("All Files", "*.*")], initialfile='untitled.py')

@@ -168,7 +168,6 @@ class CodeEditor:
         if file_path:
             with open(file_path, "w") as file:
                 file.write(self.text_area.get("1.0", "end-1c"))
-            with open("autosave_path.pkl", "wb") as file:
                 self.current_file_path = file_path
         else:
             return
@@ -226,7 +225,8 @@ class CodeEditor:
                 def run_script():
                     nonlocal process
                     try:
-                        process = subprocess.Popen(['python', file_path], 
+                        # Use sys.executable to get the path to the current Python executable
+                        process = subprocess.Popen([sys.executable, file_path], 
                                                 stdout=subprocess.PIPE, 
                                                 stderr=subprocess.PIPE, 
                                                 text=True, 
@@ -240,15 +240,15 @@ class CodeEditor:
                             if output:
                                 output_text.insert(END, output)
                                 output_text.see(END)
-                        
+                            
                         return_code = process.poll()
                         if return_code != 0:
                             error_output = process.stderr.read()
                             output_text.insert(END, f"\nError Output:\n{error_output}")
-                    
+                        
                     except Exception as e:
                         output_text.insert(END, f"Error: {str(e)}")
-                    
+                        
                     finally:
                         stop_button.config(state="disabled")
                         output_text.config(state=DISABLED)

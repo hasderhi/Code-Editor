@@ -44,17 +44,17 @@ class CodeEditor:
         self.menu_area = Frame(self.root, width=100, height=50, bg="#4d4d4d")
         self.menu_area.pack(side=TOP)
         
-        self.autoSaveEnableButton = Button(self.menu_area, width=15, height=2, text="Enable autosave", bg="#3366cc", fg="#f0f0f0", command=self.auto_save)
+        self.autoSaveEnableButton = Button(self.menu_area, width=15, height=2, text="Enable autosave", command=self.auto_save)
         self.autoSaveEnableButton.pack(side=LEFT)
-        self.saveAsButton = Button(self.menu_area, width=10, height=2, text="Save as", bg="#3366cc", fg="#f0f0f0", command=self.save_document)
+        self.saveAsButton = Button(self.menu_area, width=10, height=2, text="Save as", command=self.save_document)
         self.saveAsButton.pack(side=LEFT)
-        self.saveButton = Button(self.menu_area, width=10, height=2, text="Save", bg="#3366cc", fg="#f0f0f0", command=self.save_changes)
+        self.saveButton = Button(self.menu_area, width=10, height=2, text="Save", command=self.save_changes)
         self.saveButton.pack(side=LEFT)
-        self.saveButton = Button(self.menu_area, width=10, height=2, text="Open", bg="#3366cc",  command=self.save_changes)
+        self.saveButton = Button(self.menu_area, width=10, height=2, text="Open", command=self.open_document)
         self.saveButton.pack(side=LEFT)
-        self.viewButton = Button(self.menu_area, width=10, height=2, text="Zoom", bg="#339933", command=self.change_font_size)
+        self.viewButton = Button(self.menu_area, width=10, height=2, text="Zoom", command=self.change_font_size)
         self.viewButton.pack(side=LEFT)
-        self.runButton = Button(self.menu_area, width=10, height=2, text="Run", bg="#cc66ff", command=self.run_document)
+        self.runButton = Button(self.menu_area, width=10, height=2, text="Run", command=self.run_document)
         self.runButton.pack(side=LEFT)
         self.settingsButton = Button(self.menu_area, width=10, height=2, text="Settings")
         self.settingsButton.pack(side=LEFT)
@@ -168,6 +168,7 @@ class CodeEditor:
         if file_path:
             with open(file_path, "w") as file:
                 file.write(self.text_area.get("1.0", "end-1c"))
+            with open("autosave_path.pkl", "wb") as file:
                 self.current_file_path = file_path
         else:
             return
@@ -180,6 +181,11 @@ class CodeEditor:
         except:
             self.save_document()
         
+    def auto_save(self):
+        # Save the current document to a file
+        self.save_changes()
+        self.root.after(10000, self.auto_save)
+
     def open_document(self):
         file_path = filedialog.askopenfilename(defaultextension=".py", filetypes=[("Python scripts", "*.py"), ("Standard Text Files", "*.txt"), ("All Files", "*.*")])
         if file_path:
@@ -192,6 +198,13 @@ class CodeEditor:
                 self.current_file_path = file_path
         else:
             return
+
+
+
+
+
+
+
 
 
 
@@ -254,10 +267,15 @@ class CodeEditor:
             messagebox.showwarning("Warning", "Please save the file as a Python file before running.")
 
 
-    def auto_save(self):
-        # Save the current document to a file
-        self.save_changes()
-        self.root.after(10000, self.auto_save)
+
+
+
+
+                                               
+                                               
+
+
+
 
     def change_font_size(self):
         # Create toplevel with slider for font size selection between 1 and 100
@@ -270,6 +288,11 @@ class CodeEditor:
         self.slider.pack()
         Button(top, text="OK", command=top.destroy).pack()
     
+
+
+
+
+
     def update_font_size(self, value):
         # Update the font size of the text area
         self.text_area.config(font=("Arial", int(value)))

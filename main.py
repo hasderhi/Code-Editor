@@ -9,6 +9,8 @@ try:
     import os
     import subprocess
     import threading
+    from datetime import datetime
+    from PIL import Image, ImageTk  # Import Pillow modules
 
 except Exception as e:
     print(f"Error importing modules: {e}")
@@ -30,37 +32,38 @@ class CodeEditor:
     
     def __init__(self, root):
         self.root = root
-        self.root.title("Code Editor")
+        self.root.title("Python Editor")
         self.root.geometry("800x600")
         self.root.config(bg="#2B2B2B")
         self.root.resizable(True, True)
 
-        
+        # Load and set the icon
+        icon=Image.open("favicon.ico")
+        icon=ImageTk.PhotoImage(icon)
+        self.root.iconphoto(True, icon)
+        self.root.resizable(False, False)
 
-        #self.root.iconbitmap("icon.ico")
+
         #self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
         
 
         self.menu_area = Frame(self.root, width=100, height=50, bg="#4d4d4d")
         self.menu_area.pack(side=TOP)
         
+        self.infoButton = Button(self.menu_area, width=40, height=2, text="Python Editor 1.0", bg="#ffff00", fg="#000000", command=self.info_window)
+        self.infoButton.pack(side=LEFT)
         self.autoSaveEnableButton = Button(self.menu_area, width=15, height=2, text="Enable autosave", bg="#3366cc", fg="#f0f0f0", command=self.auto_save)
         self.autoSaveEnableButton.pack(side=LEFT)
         self.saveAsButton = Button(self.menu_area, width=10, height=2, text="Save as", bg="#3366cc", fg="#f0f0f0", command=self.save_document)
         self.saveAsButton.pack(side=LEFT)
         self.saveButton = Button(self.menu_area, width=10, height=2, text="Save", bg="#3366cc", fg="#f0f0f0", command=self.save_changes)
         self.saveButton.pack(side=LEFT)
-        self.saveButton = Button(self.menu_area, width=10, height=2, text="Open", bg="#3366cc",  command=self.save_changes)
-        self.saveButton.pack(side=LEFT)
+        self.openButton = Button(self.menu_area, width=10, height=2, text="Open", bg="#3366cc", fg="#f0f0f0", command=self.open_document)
+        self.openButton.pack(side=LEFT)
         self.viewButton = Button(self.menu_area, width=10, height=2, text="Zoom", bg="#339933", command=self.change_font_size)
         self.viewButton.pack(side=LEFT)
         self.runButton = Button(self.menu_area, width=10, height=2, text="Run", bg="#cc66ff", command=self.run_document)
         self.runButton.pack(side=LEFT)
-        self.settingsButton = Button(self.menu_area, width=10, height=2, text="Settings")
-        self.settingsButton.pack(side=LEFT)
-        self.helpButton = Button(self.menu_area, width=10, height=2, text="Help")
-        self.helpButton.pack(side=LEFT)
-
 
 
 
@@ -73,14 +76,24 @@ class CodeEditor:
 
 
 
-
         self.update_syntax_highlighting()
 
 
+    def set_window_icon(self, icon_path):
+        try:
+            # Open the icon file using Pillow
+            img = Image.open(icon_path)
+            img = img.resize((16, 16), Image.LANCZOS)  # Resize to 16x16 pixels using LANCZOS filter
+            self.root.iconphoto(False, ImageTk.PhotoImage(img))  # Set the icon for the window
+
+            # Set the icon for the taskbar (Windows)
+            self.root.iconbitmap(icon_path)  # Set the icon for the taskbar
+        except Exception as e:
+            print(f"Error loading icon: {e}")
 
     def update_syntax_highlighting(self):
         # Remove existing tags
-        for tag in ['keyword', 'comment', 'string', 'function', 'brace', 'variable', 'default', 'builtin', 'number']:
+        for tag in ['keyword', 'comment', 'string', 'function', 'brace', 'variable', 'default', 'builtin', 'number', 'library', 'exception']:
             self.text_area.tag_remove(tag, '1.0', END)
 
         # Set default text color to white
@@ -95,13 +108,20 @@ class CodeEditor:
             for match in re.finditer(r'\b\w+(?=\s*=\s*)', line):
                 variable_declarations.append(match.group())
 
-        # Highlight variables
+        # Highlight variables and other syntax
         for i, line in enumerate(lines):
-            # Comments
+            # Check for comments first
+            comment_found = False
             for match in re.finditer(r'#.*', line):
                 start = f'{i+1}.{match.start()}'
                 end = f'{i+1}.{match.end()}'
                 self.text_area.tag_add('comment', start, end)
+                comment_found = True  # Mark that a comment was found
+
+            # If a comment was found, skip highlighting keywords and variables
+            if comment_found:
+                continue  # Skip to the next line
+
 
             # Strings
             for match in re.finditer(r'("[^"]*"|\'[^\']*\')', line):
@@ -120,7 +140,7 @@ class CodeEditor:
             # Functions
             for match in re.finditer(r'\b\w+(?=\s*\()', line):
                 start = f'{i+1}.{match.start()}'
-                end = f'{i+1}.{match.end()}'
+                end= f'{i+1}.{match.end()}'
                 self.text_area.tag_add('function', start, end)
 
             # Variables
@@ -150,6 +170,29 @@ class CodeEditor:
                 end = f'{i+1}.{match.end()}'
                 self.text_area.tag_add('number', start, end)
 
+            # Highlight common libraries
+            common_libraries = [
+                'os', 'sys', 're', 'json', 'datetime', 'math', 'random', 'webbrowser', 'ctypes',
+                'subprocess', 'threading', 'time', 
+                'numpy', 'pandas', 'scipy', 'matplotlib', 'seaborn', 'statsmodels', 'scikit-learn', 
+                'flask', 'django', 'requests', 'beautifulsoup4', 'urllib', 'tensorflow', 'keras', 'pytorch', 'nltk', 'spacy', 
+                'tkinter', 'tkinter', 'tk', '*', 'messagebox', 'font', 'colorchooser', 'filedialog', 'PyQt', 'wxPython', 
+                'openpyxl', 'sqlalchemy', 'pytest', 'pillow', 'PIL', 'Image', 'ImageTk', 'pygame'
+            ]
+            for library in common_libraries:
+                for match in re.finditer(r'\b' + re.escape(library) + r'\b', line):
+                    start = f'{i+1}.{match.start()}'
+                    end = f'{i+1}.{match.end()}'
+                    self.text_area.tag_add('library', start, end)
+
+            # Highlight exceptions
+            exceptions = ['ImportError', 'ValueError', 'TypeError', 'KeyError', 'IndexError', 'AttributeError', 'NameError', 'FileNotFoundError']
+            for exception in exceptions:
+                for match in re.finditer(r'\b' + re.escape(exception) + r'\b', line):
+                    start = f'{i+1}.{match.start()}'
+                    end = f'{i+1}.{match.end()}'
+                    self.text_area.tag_add('exception', start, end)
+
         # Apply the color configurations
         self.text_area.tag_config('keyword', foreground='#569CD6')  # Light blue
         self.text_area.tag_config('comment', foreground='#608B4E')  # Green
@@ -159,6 +202,8 @@ class CodeEditor:
         self.text_area.tag_config('brace', foreground='#D4D4D4')    # Light gray
         self.text_area.tag_config('builtin', foreground='#9A6CD9')  # Purple
         self.text_area.tag_config('number', foreground='#FF69B4')   # Pink
+        self.text_area.tag_config('library', foreground='#ff6600')  # Red-Orange for libraries
+        self.text_area.tag_config('exception', foreground='#FF0000') # Red for exceptions
 
         self.root.after(100, self.update_syntax_highlighting)
 
@@ -202,10 +247,12 @@ class CodeEditor:
                 # Create and show the output window
                 output_window = Toplevel(self.root)
                 output_window.title("Python Output")
-                output_text = Text(output_window, wrap=WORD, width=80, height=20)
+                output_window.config(bg="#2B2B2B")
+                output_window.resizable(False, False)
+                output_text = Text(output_window, wrap=WORD, width=80, height=20, bg="#333333", fg="#ffffff", font="Arial")
                 output_text.pack(padx=10, pady=10)
-                
-                stop_button = Button(output_window, text="Stop Execution", command=lambda: stop_execution())
+
+                stop_button = Button(output_window, text="Stop Execution", bg="#333333", fg="#ffffff", command=lambda: stop_execution())
                 stop_button.pack(pady=5)
 
                 process = None
@@ -213,13 +260,13 @@ class CodeEditor:
                 def run_script():
                     nonlocal process
                     try:
-                        process = subprocess.Popen(['python', file_path], 
-                                                stdout=subprocess.PIPE, 
-                                                stderr=subprocess.PIPE, 
-                                                text=True, 
-                                                bufsize=1, 
+                        process = subprocess.Popen(['python', file_path],
+                                                stdout=subprocess.PIPE,
+                                                stderr=subprocess.PIPE,
+                                                text=True,
+                                                bufsize=1,
                                                 universal_newlines=True)
-                        
+
                         while True:
                             output = process.stdout.readline()
                             if output == '' and process.poll() is not None:
@@ -227,15 +274,19 @@ class CodeEditor:
                             if output:
                                 output_text.insert(END, output)
                                 output_text.see(END)
-                        
+
                         return_code = process.poll()
                         if return_code != 0:
                             error_output = process.stderr.read()
                             output_text.insert(END, f"\nError Output:\n{error_output}")
-                    
+                        else:
+                            # Print success message with the current time to both console and output_text
+                            success_message = f"Program exited successfully at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
+                            output_text.insert(END, success_message)  # Insert message into the output window
+
                     except Exception as e:
                         output_text.insert(END, f"Error: {str(e)}")
-                    
+
                     finally:
                         stop_button.config(state="disabled")
                         output_text.config(state=DISABLED)
@@ -277,9 +328,19 @@ class CodeEditor:
 
 
 
+    def info_window(self):
+        # Create a toplevel window with information about the application
+        top = Toplevel(self.root)
+        top.title("About")
+        top.geometry("300x100")
+        top.config(bg="#333333")
+        top.resizable(False,False)
+        Label(top, text="Python Editor", fg="#ffffff", bg="#333333").pack()
+        Label(top, text="Version 1.0", fg="#ffffff", bg="#333333").pack()
+        Label(top, text="Copyright 2024", fg="#ffffff", bg="#333333").pack()
+        Label(top, text="Author: Tobias Kisling", fg="#ffffff", bg="#333333").pack()
 
 
 
-    
         
 CodeEditor.init()

@@ -10,7 +10,7 @@ try:
     import subprocess
     import threading
     from datetime import datetime
-    from PIL import Image, ImageTk  # Import Pillow modules
+
 
 except Exception as e:
     print(f"Error importing modules: {e}")
@@ -21,6 +21,13 @@ except Exception as e:
     except Exception as e:
         print(f"Error importing modules: {e}")
         sys.exit(1)
+
+try:
+    from PIL import Image, ImageTk  # Import Pillow modules
+    pillow_imported = True
+except ImportError:
+    pillow_imported = False
+
 
 class CodeEditor:
 
@@ -37,11 +44,11 @@ class CodeEditor:
         self.root.config(bg="#2B2B2B")
         self.root.resizable(True, True)
 
-        # Load and set the icon
-        icon=Image.open("favicon.ico")
-        icon=ImageTk.PhotoImage(icon)
-        self.root.iconphoto(True, icon)
-        self.root.resizable(False, False)
+        if pillow_imported == True:
+            # Load and set the icon
+            icon=Image.open("favicon.ico")
+            icon=ImageTk.PhotoImage(icon)
+            self.root.iconphoto(True, icon)
 
 
         #self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
@@ -79,17 +86,6 @@ class CodeEditor:
         self.update_syntax_highlighting()
 
 
-    def set_window_icon(self, icon_path):
-        try:
-            # Open the icon file using Pillow
-            img = Image.open(icon_path)
-            img = img.resize((16, 16), Image.LANCZOS)  # Resize to 16x16 pixels using LANCZOS filter
-            self.root.iconphoto(False, ImageTk.PhotoImage(img))  # Set the icon for the window
-
-            # Set the icon for the taskbar (Windows)
-            self.root.iconbitmap(icon_path)  # Set the icon for the taskbar
-        except Exception as e:
-            print(f"Error loading icon: {e}")
 
     def update_syntax_highlighting(self):
         # Remove existing tags

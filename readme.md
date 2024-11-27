@@ -1,6 +1,6 @@
 # Python Editor
 
-### This is my Python editor written in... python. Even though it uses just one external library (Pillow for icons), it has some functions like syntax highlighting for python code, an autosave function and a function to run the code with one click directly in the program.
+### This is my Python editor written in... Python. Even though it uses just one external library (Pillow for icons), it has some functions like syntax highlighting for python code, an autosave function and a function to run the code with one click directly in the program.
 
 ## Starting with the program
 1. Install python

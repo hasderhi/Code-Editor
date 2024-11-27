@@ -10,6 +10,7 @@ try:
     import subprocess
     import threading
     from datetime import datetime
+    import ctypes
 
 
 except Exception as e:
@@ -28,9 +29,12 @@ try:
 except ImportError:
     pillow_imported = False
 
+appid = u'tkdev.pythoneditor.pe.1-0'
+ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(appid)
+
 
 class CodeEditor:
-
+    log=False
     def init():
         root = Tk()
         CodeEditor(root)
@@ -44,22 +48,24 @@ class CodeEditor:
         self.root.config(bg="#2B2B2B")
         self.root.resizable(True, True)
 
-        if pillow_imported == True:
-            # Load and set the icon
-            icon=Image.open("favicon.ico")
-            icon=ImageTk.PhotoImage(icon)
-            self.root.iconphoto(True, icon)
+        icon=Image.open("favicon.ico")
+        icon=ImageTk.PhotoImage(icon)
+        self.root.iconphoto(True, icon)
 
 
-        #self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+
+    
         
 
         self.menu_area = Frame(self.root, width=100, height=50, bg="#4d4d4d")
         self.menu_area.pack(side=TOP)
         
-        self.infoButton = Button(self.menu_area, width=40, height=2, text="Python Editor 1.0", bg="#ffff00", fg="#000000", command=self.info_window)
+        self.infoButton = Button(self.menu_area, width=20, height=2, text="Python Editor 1.0", bg="#ffff00", fg="#000000", command=self.info_window)
         self.infoButton.pack(side=LEFT)
-        self.autoSaveEnableButton = Button(self.menu_area, width=15, height=2, text="Enable autosave", bg="#3366cc", fg="#f0f0f0", command=self.auto_save)
+        self.settingsButton = Button(self.menu_area, width=20, height=2, text="Settings", bg="#cc33ff", fg="#000000",command=self.settings_window)
+        self.settingsButton.pack(side=LEFT)
+        self.autoSaveEnableButton = Button(self.menu_area, width=15, height=2, text="Enable autosave", bg="#0099cc", fg="#f0f0f0", command=self.auto_save)
         self.autoSaveEnableButton.pack(side=LEFT)
         self.saveAsButton = Button(self.menu_area, width=10, height=2, text="Save as", bg="#3366cc", fg="#f0f0f0", command=self.save_document)
         self.saveAsButton.pack(side=LEFT)
@@ -67,15 +73,14 @@ class CodeEditor:
         self.saveButton.pack(side=LEFT)
         self.openButton = Button(self.menu_area, width=10, height=2, text="Open", bg="#3366cc", fg="#f0f0f0", command=self.open_document)
         self.openButton.pack(side=LEFT)
+        self.runButton = Button(self.menu_area, width=10, height=2, text="Run", bg="#ff6600", command=self.run_document)
+        self.runButton.pack(side=LEFT)
         self.viewButton = Button(self.menu_area, width=10, height=2, text="Zoom", bg="#339933", command=self.change_font_size)
         self.viewButton.pack(side=LEFT)
-        self.runButton = Button(self.menu_area, width=10, height=2, text="Run", bg="#cc66ff", command=self.run_document)
-        self.runButton.pack(side=LEFT)
 
 
 
-
-        self.text_area = Text(self.root, width=100, height=50, font=("Arial", 17), bg="#333333", fg="#f0f0f0", insertbackground="#f0f0f0", undo=True, autoseparators=True, wrap=WORD)
+        self.text_area = Text(self.root, width=100, height=50, font=("Consolas", 17), bg="#333333", fg="#f0f0f0", insertbackground="#f0f0f0", undo=True, autoseparators=True, wrap=WORD)
         self.text_area.pack(fill=BOTH, expand=True)
         font = tkfont.Font(font=self.text_area['font']) 
         tab_size = font.measure('       ') 
@@ -173,7 +178,8 @@ class CodeEditor:
                 'numpy', 'pandas', 'scipy', 'matplotlib', 'seaborn', 'statsmodels', 'scikit-learn', 
                 'flask', 'django', 'requests', 'beautifulsoup4', 'urllib', 'tensorflow', 'keras', 'pytorch', 'nltk', 'spacy', 
                 'tkinter', 'tkinter', 'tk', '*', 'messagebox', 'font', 'colorchooser', 'filedialog', 'PyQt', 'wxPython', 
-                'openpyxl', 'sqlalchemy', 'pytest', 'pillow', 'PIL', 'Image', 'ImageTk', 'pygame'
+                'openpyxl', 'sqlalchemy', 'pytest', 'pillow', 'PIL', 'Image', 'ImageTk', 'pygame', 'pyglet', 'Pygame', 'turtle',
+                'playsound'
             ]
             for library in common_libraries:
                 for match in re.finditer(r'\b' + re.escape(library) + r'\b', line):
@@ -205,13 +211,16 @@ class CodeEditor:
 
     def save_document(self):
         # Save the current document to a file
-        file_path = filedialog.asksaveasfilename(defaultextension=".py", filetypes=[("Python scripts", "*.py"), ("Standard Text Files", "*.txt"), ("All Files", "*.*")], initialfile='untitled.py')
-        if file_path:
-            with open(file_path, "w") as file:
-                file.write(self.text_area.get("1.0", "end-1c"))
-                self.current_file_path = file_path
-        else:
-            return
+        try:
+            file_path = filedialog.asksaveasfilename(defaultextension=".py", filetypes=[("Python scripts", "*.py"), ("Standard Text Files", "*.txt"), ("All Files", "*.*")], initialfile='untitled.py')
+            if file_path:
+                with open(file_path, "w") as file:
+                    file.write(self.text_area.get("1.0", "end-1c"))
+                    self.current_file_path = file_path
+            else:
+                return
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to save document: {str(e)}")
     
     def save_changes(self):
         # Save the current document to a file
@@ -237,6 +246,9 @@ class CodeEditor:
 
 
     def run_document(self):
+        # Set this variable to control logging
+        log = True  
+
         if hasattr(self, 'current_file_path') and self.current_file_path:
             file_path = self.current_file_path
             if os.path.exists(file_path) and file_path.endswith('.py'):
@@ -254,14 +266,21 @@ class CodeEditor:
                 process = None
 
                 def run_script():
+                    log=False
                     nonlocal process
+                    log_file_path = "output_log.txt"  # Specify the log file name
+                    log_file = None  # Initialize log_file variable
+
+                    if log:  # Check if logging is enabled
+                        log_file = open(log_file_path, "w")  # Open the log file for writing
+                    
                     try:
                         process = subprocess.Popen(['python', file_path],
-                                                stdout=subprocess.PIPE,
-                                                stderr=subprocess.PIPE,
-                                                text=True,
-                                                bufsize=1,
-                                                universal_newlines=True)
+                                                    stdout=subprocess.PIPE,
+                                                    stderr=subprocess.PIPE,
+                                                    text=True,
+                                                    bufsize=1,
+                                                    universal_newlines=True)
 
                         while True:
                             output = process.stdout.readline()
@@ -270,20 +289,29 @@ class CodeEditor:
                             if output:
                                 output_text.insert(END, output)
                                 output_text.see(END)
+                                if log:  # Log the output to the file if logging is enabled
+                                    log_file.write(output)
 
                         return_code = process.poll()
                         if return_code != 0:
                             error_output = process.stderr.read()
                             output_text.insert(END, f"\nError Output:\n{error_output}")
+                            if log:  # Log error output to the file if logging is enabled
+                                log_file.write(f"\nError Output:\n{error_output}")
                         else:
-                            # Print success message with the current time to both console and output_text
                             success_message = f"Program exited successfully at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
-                            output_text.insert(END, success_message)  # Insert message into the output window
+                            output_text.insert(END, success_message)
+                            if log:  # Log success message to the file if logging is enabled
+                                log_file.write(success_message)
 
                     except Exception as e:
                         output_text.insert(END, f"Error: {str(e)}")
+                        if log:  # Log error to the file if logging is enabled
+                            log_file.write(f"Error: {str(e)}")
 
                     finally:
+                        if log:  # Close the log file if it was opened
+                            log_file.close()
                         stop_button.config(state="disabled")
                         output_text.config(state=DISABLED)
 
@@ -294,7 +322,7 @@ class CodeEditor:
 
                 # Run the script in a separate thread
                 threading.Thread(target=run_script, daemon=True).start()
-
+        
             else:
                 messagebox.showerror("Error", "The current file is not a Python file or doesn't exist.")
         else:
@@ -312,14 +340,14 @@ class CodeEditor:
         top.geometry("300x100")
         top.title("Change Font Size")
         Label(top, text="Font Size:").pack()
-        self.slider = Scale(top, from_=1, to=100, orient=HORIZONTAL, command=self.update_font_size)
+        self.slider = Scale(top, from_=1, to=100, length=300, orient=HORIZONTAL, command=self.update_font_size)
         self.slider.set(17)
         self.slider.pack()
         Button(top, text="OK", command=top.destroy).pack()
     
     def update_font_size(self, value):
         # Update the font size of the text area
-        self.text_area.config(font=("Arial", int(value)))
+        self.text_area.config(font=("Consolas", int(value)))
 
 
 
@@ -336,7 +364,26 @@ class CodeEditor:
         Label(top, text="Copyright 2024", fg="#ffffff", bg="#333333").pack()
         Label(top, text="Author: Tobias Kisling", fg="#ffffff", bg="#333333").pack()
 
+    def settings_window(self):
+        # Create a toplevel window with settings for the application
+        top = Toplevel(self.root)
+        top.title("Settings")
+        top.geometry("300x100")
+        top.config(bg="#333333")
+        top.resizable(False,False)
+
+        Label(top, text="Enable logging").pack()
+
+        log_on_off = Scale(top, from_=0, to=1, length=100, orient=HORIZONTAL, command=self.set_log)
+        log_on_off.set(0)
+        log_on_off.pack()
 
 
+                            
+    def set_log(self, value):
+        if value == 0:
+            self.log = False
+        elif value == 1:
+            self.log = True
         
 CodeEditor.init()

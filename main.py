@@ -34,7 +34,6 @@ ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(appid)
 
 
 class CodeEditor:
-    log=False
     def init():
         root = Tk()
         CodeEditor(root)
@@ -48,9 +47,10 @@ class CodeEditor:
         self.root.config(bg="#2B2B2B")
         self.root.resizable(True, True)
 
-        icon=Image.open("favicon.ico")
-        icon=ImageTk.PhotoImage(icon)
-        self.root.iconphoto(True, icon)
+        if pillow_imported:
+            icon=Image.open("favicon.ico")
+            icon=ImageTk.PhotoImage(icon)
+            self.root.iconphoto(True, icon)
 
 
 
@@ -63,15 +63,13 @@ class CodeEditor:
         
         self.infoButton = Button(self.menu_area, width=20, height=2, text="Python Editor 1.0", bg="#ffff00", fg="#000000", command=self.info_window)
         self.infoButton.pack(side=LEFT)
-        self.settingsButton = Button(self.menu_area, width=20, height=2, text="Settings", bg="#cc33ff", fg="#000000",command=self.settings_window)
-        self.settingsButton.pack(side=LEFT)
         self.autoSaveEnableButton = Button(self.menu_area, width=15, height=2, text="Enable autosave", bg="#0099cc", fg="#f0f0f0", command=self.auto_save)
         self.autoSaveEnableButton.pack(side=LEFT)
         self.saveAsButton = Button(self.menu_area, width=10, height=2, text="Save as", bg="#3366cc", fg="#f0f0f0", command=self.save_document)
         self.saveAsButton.pack(side=LEFT)
         self.saveButton = Button(self.menu_area, width=10, height=2, text="Save", bg="#3366cc", fg="#f0f0f0", command=self.save_changes)
         self.saveButton.pack(side=LEFT)
-        self.openButton = Button(self.menu_area, width=10, height=2, text="Open", bg="#3366cc", fg="#f0f0f0", command=self.open_document)
+        self.openButton = Button(self.menu_area, width=10, height=2, text="Open", bg="#ff0066", fg="#f0f0f0", command=self.open_document)
         self.openButton.pack(side=LEFT)
         self.runButton = Button(self.menu_area, width=10, height=2, text="Run", bg="#ff6600", command=self.run_document)
         self.runButton.pack(side=LEFT)
@@ -246,9 +244,6 @@ class CodeEditor:
 
 
     def run_document(self):
-        # Set this variable to control logging
-        log = True  
-
         if hasattr(self, 'current_file_path') and self.current_file_path:
             file_path = self.current_file_path
             if os.path.exists(file_path) and file_path.endswith('.py'):
@@ -266,13 +261,8 @@ class CodeEditor:
                 process = None
 
                 def run_script():
-                    log=False
                     nonlocal process
-                    log_file_path = "output_log.txt"  # Specify the log file name
-                    log_file = None  # Initialize log_file variable
-
-                    if log:  # Check if logging is enabled
-                        log_file = open(log_file_path, "w")  # Open the log file for writing
+        
                     
                     try:
                         process = subprocess.Popen(['python', file_path],
@@ -289,29 +279,21 @@ class CodeEditor:
                             if output:
                                 output_text.insert(END, output)
                                 output_text.see(END)
-                                if log:  # Log the output to the file if logging is enabled
-                                    log_file.write(output)
+
 
                         return_code = process.poll()
                         if return_code != 0:
                             error_output = process.stderr.read()
                             output_text.insert(END, f"\nError Output:\n{error_output}")
-                            if log:  # Log error output to the file if logging is enabled
-                                log_file.write(f"\nError Output:\n{error_output}")
+                        
                         else:
                             success_message = f"Program exited successfully at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
                             output_text.insert(END, success_message)
-                            if log:  # Log success message to the file if logging is enabled
-                                log_file.write(success_message)
 
                     except Exception as e:
                         output_text.insert(END, f"Error: {str(e)}")
-                        if log:  # Log error to the file if logging is enabled
-                            log_file.write(f"Error: {str(e)}")
 
                     finally:
-                        if log:  # Close the log file if it was opened
-                            log_file.close()
                         stop_button.config(state="disabled")
                         output_text.config(state=DISABLED)
 
@@ -364,26 +346,5 @@ class CodeEditor:
         Label(top, text="Copyright 2024", fg="#ffffff", bg="#333333").pack()
         Label(top, text="Author: Tobias Kisling", fg="#ffffff", bg="#333333").pack()
 
-    def settings_window(self):
-        # Create a toplevel window with settings for the application
-        top = Toplevel(self.root)
-        top.title("Settings")
-        top.geometry("300x100")
-        top.config(bg="#333333")
-        top.resizable(False,False)
 
-        Label(top, text="Enable logging").pack()
-
-        log_on_off = Scale(top, from_=0, to=1, length=100, orient=HORIZONTAL, command=self.set_log)
-        log_on_off.set(0)
-        log_on_off.pack()
-
-
-                            
-    def set_log(self, value):
-        if value == 0:
-            self.log = False
-        elif value == 1:
-            self.log = True
-        
 CodeEditor.init()

@@ -106,7 +106,6 @@ class CodeEditor:
         for i, line in enumerate(lines):
             for match in re.finditer(r'\b\w+(?=\s*=\s*)', line):
                 variable_declarations.append(match.group())
-
         # Highlight variables and other syntax
         for i, line in enumerate(lines):
             # Check for comments first
@@ -123,10 +122,15 @@ class CodeEditor:
 
 
             # Strings
+            string_found = False
             for match in re.finditer(r'("[^"]*"|\'[^\']*\')', line):
                 start = f'{i+1}.{match.start()}'
                 end = f'{i+1}.{match.end()}'
                 self.text_area.tag_add('string', start, end)
+                string_found = True
+            
+            if string_found:
+                continue  # Skip to the next line
 
             # Keywords
             keywords = ['and', 'as', 'assert', 'break', 'class', 'continue', 'def', 'del', 'elif', 'else', 'except', 'False', 'finally', 'for', 'from', 'global', 'if', 'import', 'in', 'is', 'lambda', 'None', 'nonlocal', 'not', 'or', 'pass', 'raise', 'return', 'True', 'try', 'while', 'with', 'yield']
@@ -202,8 +206,8 @@ class CodeEditor:
         self.text_area.tag_config('brace', foreground='#D4D4D4')    # Light gray
         self.text_area.tag_config('builtin', foreground='#9A6CD9')  # Purple
         self.text_area.tag_config('number', foreground='#FF69B4')   # Pink
-        self.text_area.tag_config('library', foreground='#ff6600')  # Red-Orange for libraries
-        self.text_area.tag_config('exception', foreground='#FF0000') # Red for exceptions
+        self.text_area.tag_config('library', foreground='#ff6600')  # Red-Orange
+        self.text_area.tag_config('exception', foreground='#FF0000') # Red
 
         self.root.after(100, self.update_syntax_highlighting)
 

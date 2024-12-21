@@ -1,14 +1,27 @@
-# Python Editor
+# HTML Editor
 
-### This is my Python editor written in... Python. Even though it uses just one external library (Pillow for icons), it has some functions like syntax highlighting for python code, an autosave function and a function to run the code with one click directly in the program.
+This is my HTML, CSS and JavaScript editor written in Python. Even though it uses just one external library (Pillow for icons), it has some functions like syntax highlighting for python code, an autosave function and a function to run the code with one click directly in the program.
 
 ## Starting with the program
+
+**Warning: Because of the appId usage, the program will not function on any other OS than Windows. To run it on a different OS, remove the following lines:**
+
+```python
+import ctypes
+
+appid = u'tkdev.htmleditor.he.1-0' 
+ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(appid)
+```
+
+### Installation
+
 1. Install python
 2. Install the pillow library with ```pip install pillow``` (You can skip this if you don't need icons)
 3. Run the program with python (python3 for python 3.x)
 
 ## Using the editor
-In the main window, start writing your python code. The editor will mark keywords, variables, function and more.<br>
+
+In the main window, start writing your HTML code. The editor will mark keywords, variables, function and more.
 **Note: The editor does not mark errors in the code (yet).**
 
 With the ```save as``` button you can save your file in a specific directory.
@@ -19,10 +32,9 @@ The ```zoom``` function changes the font size.
 The ```run``` function runs the program in a seperate window.
 
 ## Additional information
+
 Written by Tobias Kisling
 
 Version 1.0
 
-
-You can reach me by mail (tobias.kisling@icloud.com) or on github (https://github.com/hasderhi).
-
+You can reach me by mail (<tobias.kisling@icloud.com>) or on github (<https://github.com/hasderhi>).

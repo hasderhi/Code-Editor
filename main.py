@@ -2,6 +2,8 @@
 # Import necessary libraries
 #####################################
 
+win = False # Windows flag is set to false
+
 try:
     from tkinter import *
     from tkinter import filedialog
@@ -12,8 +14,9 @@ try:
     import sys
     import os
     import webbrowser
-    import ctypes  # Remove this line if not on windows
-
+    if os.name == 'nt': # If system is win32, import ctypes and set flag to true
+        import ctypes
+        win = True
 except Exception as e:
     print(f"Error importing modules: {e}")
     try:
@@ -27,7 +30,6 @@ except Exception as e:
 
 try:
     from PIL import Image, ImageTk  # Try to import Pillow modules
-
     pillow_imported = True
 except ImportError:
     pillow_imported = False
@@ -36,9 +38,9 @@ except ImportError:
 #####################################
 # Set up appId
 #####################################
-
-appid = "tkdev.htmleditor.he.1-0"                                     # Remove this line if not on windows
-ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(appid)  # Remove this line if not on windows
+if win: # If win flag true, set up id
+    appid = "tkdev.htmleditor.he.1-0"
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(appid)  
 
 
 #####################################

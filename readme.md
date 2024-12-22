@@ -21,7 +21,7 @@ ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(appid)
 
 ## Using the editor
 
-In the main window, start writing your HTML code. The editor will mark keywords, variables, function and more.
+In the main window, start writing your code. The editor will mark keywords, variables, function and more.
 **Note: The editor does not mark errors in the code (yet).**
 
 With the ```save as``` button you can save your file in a specific directory.

@@ -176,13 +176,18 @@ class HTMLEditor:
         self.text_area.tag_remove("javascript_function", "1.0", END)
         self.text_area.tag_remove("javascript_variable", "1.0", END)
         self.text_area.tag_remove("javascript_keyword", "1.0", END)
-        self.text_area.tag_remove("string_literal", "1.0", END)  # Clear string literals
+        self.text_area.tag_remove("string_literal", "1.0", END)
+        self.text_area.tag_remove("html_comment", "1.0", END)
+        self.text_area.tag_remove("js_comment", "1.0", END)
+        self.text_area.tag_remove("integer", "1.0", END)
+        self.text_area.tag_remove("px_value", "1.0", END)
 
         # Get content of text
         content = self.text_area.get("1.0", END)
 
-        # regex patterns for HTML tags, CSS styles, JavaScript code, and string literals
+        # regex patterns for HTML tags, CSS styles, JavaScript code, string literals, and HTML comments
         html_tag_pattern = r"</?[\w\s=\"\'\-\/]*[^<>]*\/?>"
+        html_comment_pattern = r"<!--.*?-->"  # Matches HTML comments
 
         # CSS patterns
         css_class_pattern = r"\.[\w-]+"  # Matches CSS classes
@@ -196,11 +201,35 @@ class HTMLEditor:
         # String literal pattern
         string_literal_pattern = r'(["\'])(?:(?=(\\?))\2.)*?\1'  # Matches strings in double or single quotes
 
+        # Integer pattern (not in a string and not in an HTML tag)
+        integer_pattern = r'(?<![<"\'])\b\d+\b(?![>\'"])'  # Matches integers
+
+        # px value pattern (not in a string and not in an HTML tag)
+        px_value_pattern = r'(?<![<"\'])\b\d+px\b(?![>\'"])'  # Matches numerals followed by 'px'
+
         # HTML tags
         for match in re.finditer(html_tag_pattern, content):
             self.text_area.tag_add(
                 "html_tag", f"1.0 + {match.start()} chars", f"1.0 + {match.end()} chars"
             )
+
+        # HTML comments
+        for match in re.finditer(html_comment_pattern, content):
+            self.text_area.tag_add(
+                "html_comment",
+                f"1.0 + {match.start()} chars",
+                f"1.0 + {match.end()} chars",
+            )
+
+        # JavaScript comments
+        for match in re.finditer(r"//.*?$", content, re.MULTILINE):
+            start_index = match.start()
+            if not content[max(0, start_index - 7):start_index].strip().endswith(('http:', 'https:')):
+                self.text_area.tag_add(
+                    "js_comment",
+                    f"1.0 + {match.start()} chars",
+                    f"1.0 + {match.end()} chars",
+                )
 
         # CSS classes
         for match in re.finditer(css_class_pattern, content):
@@ -250,14 +279,34 @@ class HTMLEditor:
                 f"1.0 + {match.end()} chars",
             )
 
+        # Integers
+        for match in re.finditer(integer_pattern, content):
+            self.text_area.tag_add(
+                "integer",
+                f"1.0 + {match.start()} chars",
+                f"1.0 + {match.end()} chars",
+            )
+
+        # px values
+        for match in re.finditer(px_value_pattern, content):
+            self.text_area.tag_add(
+                "px_value",
+                f"1.0 + {match.start()} chars",
+                f"1.0 + {match.end()} chars",
+            )
+
         # Configure tag colors (Edit this to change colors to your needs)
-        self.text_area.tag_config("html_tag", foreground="lightblue")
-        self.text_area.tag_config("css_class", foreground="purple")
-        self.text_area.tag_config("css_property", foreground="cyan")
-        self.text_area.tag_config("javascript_function", foreground="orange")
-        self.text_area.tag_config("javascript_variable", foreground="lightgreen")
-        self.text_area.tag_config("javascript_keyword", foreground="red")
-        self.text_area.tag_config("string_literal", foreground="orange")  # Set string literals to orange
+        self.text_area.tag_config("html_tag", foreground="#66e0ff")                 # Light blue
+        self.text_area.tag_config("html_comment", foreground="#006622")             # Dark green
+        self.text_area.tag_config("js_comment", foreground="#006622")               # Dark green
+        self.text_area.tag_config("css_class", foreground="#ff00ff")                # Pink
+        self.text_area.tag_config("css_property", foreground="#00ffaa")             # Light green
+        self.text_area.tag_config("javascript_function", foreground="#ffcc00")      # Yellow orange 
+        self.text_area.tag_config("javascript_variable", foreground="#00ff00")      # Lime
+        self.text_area.tag_config("javascript_keyword", foreground="#ff0066")       # Red
+        self.text_area.tag_config("string_literal", foreground="#ff9933")           # Orange
+        self.text_area.tag_config("integer", foreground="#ffcc00")                  # Yellow orange
+        self.text_area.tag_config("px_value", foreground="#ffcc00")                 # Yellow orange
 
         # Schedule next update
         self.root.after(100, self.update_syntax_highlighting)

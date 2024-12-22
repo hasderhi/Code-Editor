@@ -176,11 +176,12 @@ class HTMLEditor:
         self.text_area.tag_remove("javascript_function", "1.0", END)
         self.text_area.tag_remove("javascript_variable", "1.0", END)
         self.text_area.tag_remove("javascript_keyword", "1.0", END)
+        self.text_area.tag_remove("string_literal", "1.0", END)  # Clear string literals
 
         # Get content of text
         content = self.text_area.get("1.0", END)
 
-        # regex patterns for HTML tags, CSS styles, and JavaScript code
+        # regex patterns for HTML tags, CSS styles, JavaScript code, and string literals
         html_tag_pattern = r"</?[\w\s=\"\'\-\/]*[^<>]*\/?>"
 
         # CSS patterns
@@ -191,6 +192,9 @@ class HTMLEditor:
         javascript_function_pattern = r"\b\w+(?=\s*\()"
         javascript_variable_pattern = r"\b(var|let|const)\s+(\w+)"
         javascript_keyword_pattern = r"(?<![a-zA-Z0-9_])\b(var|let|const|function|if|else|for|while|return|switch|case|break|continue|try|catch|finally|async|await|import|export|class|extends|super|this|new|delete|instanceof|typeof|void|with|do|in|of|default|static|get|set|yield|throw|true|false|null|undefined)\b(?![a-zA-Z0-9_])"
+
+        # String literal pattern
+        string_literal_pattern = r'(["\'])(?:(?=(\\?))\2.)*?\1'  # Matches strings in double or single quotes
 
         # HTML tags
         for match in re.finditer(html_tag_pattern, content):
@@ -238,6 +242,14 @@ class HTMLEditor:
                 f"1.0 + {match.end()} chars",
             )
 
+        # String literals
+        for match in re.finditer(string_literal_pattern, content):
+            self.text_area.tag_add(
+                "string_literal",
+                f"1.0 + {match.start()} chars",
+                f"1.0 + {match.end()} chars",
+            )
+
         # Configure tag colors (Edit this to change colors to your needs)
         self.text_area.tag_config("html_tag", foreground="lightblue")
         self.text_area.tag_config("css_class", foreground="purple")
@@ -245,6 +257,7 @@ class HTMLEditor:
         self.text_area.tag_config("javascript_function", foreground="orange")
         self.text_area.tag_config("javascript_variable", foreground="lightgreen")
         self.text_area.tag_config("javascript_keyword", foreground="red")
+        self.text_area.tag_config("string_literal", foreground="orange")  # Set string literals to orange
 
         # Schedule next update
         self.root.after(100, self.update_syntax_highlighting)

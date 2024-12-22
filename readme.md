@@ -4,15 +4,6 @@ This is my HTML, CSS and JavaScript editor written in Python. Even though it use
 
 ## Starting with the program
 
-**Warning: Because of the appId usage, the program will not function on any other OS than Windows. To run it on a different OS, remove the following lines:**
-
-```python
-import ctypes
-
-appid = u'tkdev.htmleditor.he.1-0' 
-ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(appid)
-```
-
 ### Installation
 
 1. Install python

@@ -56,15 +56,28 @@ class HTMLEditor:
 
     def init():
         root = Tk()
-        HTMLEditor(root)
+        editor = HTMLEditor(root)
+        root.protocol("WM_DELETE_WINDOW", editor.confirm_exit)  # Bind the close event
         root.mainloop()
 
     def __init__(self, root):
         self.root = root
-        self.root.title("HTML Editor")
+        self.root.title(f"HTML Editor - Untitled Document")
         self.root.geometry("800x600")
         self.root.config(bg="#2B2B2B")
         self.root.resizable(True, True)
+        self.unsaved_changes = False  # Track changes
+        self.current_file_path = None  # Initialize current_file_path
+        self.root.bind('<Control-s>', lambda event: self.save_changes())
+        self.root.bind('<Control-S>', lambda event: self.save_document())
+        self.root.bind('<Control-r>', lambda event: self.open_document_in_browser())
+        self.root.bind('<Control-o>', lambda event: self.open_document())
+        self.root.bind('<Control-u>', lambda event: self.change_font_size())
+        self.root.bind('<Control-plus>', lambda event: self.increase_font_size())
+        self.root.bind('<Control-minus>', lambda event: self.decrease_font_size())
+        self.root.bind('<Control-f>', lambda event: self.find_replace())
+        
+
 
         if pillow_imported:
             icon = Image.open("favicon.ico")
@@ -146,12 +159,21 @@ class HTMLEditor:
             command=self.change_font_size,
         )
         self.viewButton.pack(side=LEFT)
+        self.frButton = Button(
+            self.menu_area,
+            width=10,
+            height=2,
+            text="Find/Replace",
+            bg="#ff33cc",
+            command=self.find_replace,
+        )
+        self.frButton.pack(side=LEFT)
 
         self.text_area = Text(
             self.root,
             width=100,
             height=50,
-            font=("Consolas", 17),
+            font=("Consolas", 13),
             bg="#333333",
             fg="#f0f0f0",
             insertbackground="#f0f0f0",
@@ -163,7 +185,8 @@ class HTMLEditor:
         font = tkfont.Font(font=self.text_area["font"])
         tab_size = font.measure("       ")  # Edit this to change tab size to your needs
         self.text_area.config(tabs=tab_size)
-
+        self.text_area.bind("<<Modified>>", self.on_text_change)
+        
         self.update_syntax_highlighting()  # Init syntax highlighting
 
     #####################################
@@ -317,6 +340,11 @@ class HTMLEditor:
     # Save, open, autosave functions
     #####################################
 
+    def on_text_change(self, event):
+        self.unsaved_changes = True
+        self.text_area.edit_modified(False)  # Reset the modified flag
+        self.update_title()  # Update the title to reflect unsaved changes
+
     def save_document(self):
         # Save the current document to a file
         try:
@@ -335,6 +363,8 @@ class HTMLEditor:
                 with open(file_path, "w") as file:
                     file.write(self.text_area.get("1.0", "end-1c"))
                     self.current_file_path = file_path
+                    self.unsaved_changes = False  # Reset unsaved changes flag
+                    self.update_title()  # Update title
             else:
                 return
         except Exception as e:
@@ -345,6 +375,8 @@ class HTMLEditor:
         try:
             with open(self.current_file_path, "w") as file:
                 file.write(self.text_area.get("1.0", "end-1c"))
+                self.unsaved_changes = False  # Reset unsaved changes flag
+                self.update_title()  # Update title
         except:
             self.save_document()
 
@@ -365,14 +397,32 @@ class HTMLEditor:
                     text = file.read()
                     self.file_name = os.path.basename(file_path)
                     self.text_area.delete("1.0", END)
-                    # Insert the file contents into the text area
                     self.text_area.insert("1.0", text)
                     self.current_file_path = file_path
+                    self.unsaved_changes = False  # Reset unsaved changes flag
+                    self.update_title()  # Update title
             else:
                 return
         except Exception as e:
             messagebox.showerror("Error", f"Failed to open document: {str(e)}")
 
+
+
+    def update_title(self):
+        if self.current_file_path:  # Check if current_file_path is set
+            if self.unsaved_changes:
+                self.root.title(f"HTML Editor - {os.path.basename(self.current_file_path)}*")
+            else:
+                self.root.title(f"HTML Editor - {os.path.basename(self.current_file_path)}")
+        else:
+            self.root.title("HTML Editor - Untitled Document")  # Default title if no file is opened
+
+
+
+
+
+
+    
     def auto_save(self):
         self.save_changes()
         self.root.after(
@@ -410,12 +460,24 @@ class HTMLEditor:
             orient=HORIZONTAL,
             command=self.update_font_size,
         )
-        self.slider.set(17)
+        self.slider.set(13)
         self.slider.pack()
-        Button(top, text="OK", command=top.destroy).pack()
+        Button(top, text="Close", command=top.destroy).pack()
 
     def update_font_size(self, value):
         self.text_area.config(font=("Consolas", int(value)))
+
+    def increase_font_size(self):
+        current_font = tkfont.Font(font=self.text_area.cget("font"))
+        new_size = current_font.actual("size") + 1
+        self.text_area.config(font=("Consolas", new_size))
+
+    def decrease_font_size(self):
+        current_font = tkfont.Font(font=self.text_area.cget("font"))
+        new_size = max(1, current_font.actual("size") - 1)  # Prevents font size from going below 1
+        self.text_area.config(font=("Consolas", new_size))
+
+
 
     #####################################
     # Information window
@@ -432,6 +494,91 @@ class HTMLEditor:
         Label(top, text="Copyright 2024", fg="#ffffff", bg="#333333").pack()
         Label(top, text="Author: Tobias Kisling", fg="#ffffff", bg="#333333").pack()
 
+    def find_replace(self):
+        # Create a Toplevel window for find and replace
+        find_replace_window = Toplevel(self.root)
+        find_replace_window.title("Find and Replace")
+        find_replace_window.geometry("400x200")
+        find_replace_window.config(bg="#333333")
+        
+        # Create labels and entry fields
+        Label(find_replace_window, text="Find:", bg="#333333", fg="#ffffff").pack(pady=10)
+        find_entry = Entry(find_replace_window, width=40)
+        find_entry.pack(pady=5)
+
+        Label(find_replace_window, text="Replace with:", bg="#333333", fg="#ffffff").pack(pady=10)
+        replace_entry = Entry(find_replace_window, width=40)
+        replace_entry.pack(pady=5)
+
+        # Function to perform find and replace
+        def perform_find_replace():
+            find_text = find_entry.get()
+            replace_text = replace_entry.get()
+            
+            # Check if the find_text is empty
+            if not find_text:
+                messagebox.showwarning("Input Error", "Please enter text to find.")
+                return  # Exit the function if no text is provided
+
+            content = self.text_area.get("1.0", END)
+            
+            # Clear previous highlights
+            self.text_area.tag_remove("highlight", "1.0", END)
+            
+            # Search for the text and highlight matches
+            start_index = 0
+            matches = 0
+            
+            while True:
+                start_index = content.find(find_text, start_index)
+                if start_index == -1:
+                    break
+                matches += 1
+                end_index = start_index + len(find_text)
+                self.text_area.tag_add("highlight", f"1.0 + {start_index} chars", f"1.0 + {end_index} chars")
+                start_index += len(find_text)  # Move past the last found match
+
+            # Update the text area to reflect the highlights
+            self.text_area.tag_config("highlight", background="#ffcc00")  # Highlight color
+            self.text_area.mark_set("insert", "1.0")  # Reset cursor position
+            self.text_area.see("1.0")  # Scroll to the top
+
+            # Show number of matches found
+            messagebox.showinfo("Find Results", f"Found {matches} matches.")
+
+            # Replace text if any matches were found
+            if matches > 0 and replace_text:
+                new_content = content.replace(find_text, replace_text)
+                self.text_area.delete("1.0", END)
+                self.text_area.insert("1.0", new_content)
+
+        # Function to clear highlights when the window is closed
+        def clear_highlights():
+            self.text_area.tag_remove("highlight", "1.0", END)
+
+        # Bind the clear_highlights function to the window's destroy event
+        find_replace_window.protocol("WM_DELETE_WINDOW", lambda: (clear_highlights(), find_replace_window.destroy()))
+
+        # Create a button to execute the find and replace
+        replace_button = Button(find_replace_window, text="Find and Replace", command=perform_find_replace, bg="#0099cc", fg="#ffffff")
+        replace_button.pack(pady=20)
+
+        # Create a button to close the window
+        close_button = Button(find_replace_window, text="Close", command=lambda: (clear_highlights(), find_replace_window.destroy()), bg="#ff0066", fg="#ffffff")
+        close_button.pack(pady=5)
+
+
+    #####################################
+    # Add exit confirmation method
+    #####################################
+
+    def confirm_exit(self):
+        if self.unsaved_changes:  # Check if there are unsaved changes
+            response = messagebox.askyesno("Confirm Exit", "You have unsaved changes. Do you really want to exit?")
+            if response:  # If user confirms, exit the application
+                self.root.destroy()
+        else:
+            self.root.destroy()  # Exit without confirmation if no unsaved changes
 
 #####################################
 # Init main class

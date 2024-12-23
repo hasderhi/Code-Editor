@@ -21,7 +21,6 @@ except Exception as e:
     print(f"Error importing modules: {e}")
     try:
         from tkinter import messagebox
-
         messagebox.showerror("Error", f"Error importing modules: {e}")
         sys.exit(1)
     except Exception as e:
@@ -351,9 +350,9 @@ class HTMLEditor:
             file_path = filedialog.asksaveasfilename(
                 defaultextension=".html",
                 filetypes=[
-                    ("HTML sites", "*.html"),
+                    ("HTML Sites", "*.html"),
                     ("Cascading Style Sheets", "*.css"),
-                    ("JavaScript scripts", "*.js"),
+                    ("JavaScript Scripts", "*.js"),
                     ("Standard Text Files", "*.txt"),
                     ("All Files", "*.*"),
                 ],
@@ -385,9 +384,9 @@ class HTMLEditor:
             file_path = filedialog.askopenfilename(
                 defaultextension=".html",
                 filetypes=[
-                    ("HTML sites", "*.html"),
+                    ("HTML Sites", "*.html"),
                     ("Cascading Style Sheets", "*.css"),
-                    ("JavaScript scripts", "*.js"),
+                    ("JavaScript Scripts", "*.js"),
                     ("Standard Text Files", "*.txt"),
                     ("All Files", "*.*"),
                 ],

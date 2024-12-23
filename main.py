@@ -21,7 +21,6 @@ except Exception as e:
     print(f"Error importing modules: {e}")
     try:
         from tkinter import messagebox
-
         messagebox.showerror("Error", f"Error importing modules: {e}")
         sys.exit(1)
     except Exception as e:

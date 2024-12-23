@@ -350,9 +350,9 @@ class HTMLEditor:
             file_path = filedialog.asksaveasfilename(
                 defaultextension=".html",
                 filetypes=[
-                    ("HTML sites", "*.html"),
+                    ("HTML Sites", "*.html"),
                     ("Cascading Style Sheets", "*.css"),
-                    ("JavaScript scripts", "*.js"),
+                    ("JavaScript Scripts", "*.js"),
                     ("Standard Text Files", "*.txt"),
                     ("All Files", "*.*"),
                 ],
@@ -384,9 +384,9 @@ class HTMLEditor:
             file_path = filedialog.askopenfilename(
                 defaultextension=".html",
                 filetypes=[
-                    ("HTML sites", "*.html"),
+                    ("HTML Sites", "*.html"),
                     ("Cascading Style Sheets", "*.css"),
-                    ("JavaScript scripts", "*.js"),
+                    ("JavaScript Scripts", "*.js"),
                     ("Standard Text Files", "*.txt"),
                     ("All Files", "*.*"),
                 ],

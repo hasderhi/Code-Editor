@@ -1,6 +1,6 @@
 # HTML Editor
 
-This is my HTML, CSS and JavaScript editor written in Python. Even though it uses just one external library (Pillow for icons), it has some functions like syntax highlighting for python code, an autosave function and a function to run the code with one click directly in the program.
+This is my HTML, CSS and JavaScript editor written in Python. Even though it uses just one external library (Pillow for icons), it has some functions like syntax highlighting for HTML, CSS and JavaScript code, an autosave function and a function to run the code with one click directly in the program.
 
 ## Starting with the program
 
@@ -20,7 +20,7 @@ With the ```save``` you can save your changes. The ```enable autosave``` functio
 ```open``` does exactly what it says... it opens a file from your computer.
 The ```zoom``` function changes the font size.
 
-The ```run``` function runs the program in a seperate window.
+The ```run``` function runs the Code in a seperate window.
 
 ## Additional information
 

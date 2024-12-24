@@ -2,7 +2,7 @@
 # Import necessary libraries
 #####################################
 
-win = False # Windows flag is set to false
+win = False  # Windows flag is set to false
 
 try:
     from tkinter import *
@@ -10,13 +10,16 @@ try:
     from tkinter import messagebox
     from tkinter import Toplevel, Text, WORD, END, Button
     import tkinter.font as tkfont
+    from tkinter import ttk
     import re
     import sys
     import os
     import webbrowser
-    if os.name == 'nt': # If system is win32, import ctypes and set flag to true
+
+    if os.name == "nt":  # If system is win32, import ctypes and set flag to true
         import ctypes
         win = True
+
 except Exception as e:
     print(f"Error importing modules: {e}")
     try:
@@ -28,7 +31,7 @@ except Exception as e:
         sys.exit(1)
 
 try:
-    from PIL import Image, ImageTk  # Try to import Pillow modules
+    from PIL import Image, ImageTk, ImageDraw, ImageFont  # Try to import Pillow modules
     pillow_imported = True
 except ImportError:
     pillow_imported = False
@@ -37,9 +40,9 @@ except ImportError:
 #####################################
 # Set up appId
 #####################################
-if win: # If win flag true, set up id
+if win:  # If win flag true, set up id
     appid = "tkdev.htmleditor.he.1-0"
-    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(appid)  
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(appid)
 
 
 #####################################
@@ -65,18 +68,17 @@ class HTMLEditor:
         self.root.geometry("800x600")
         self.root.config(bg="#2B2B2B")
         self.root.resizable(True, True)
+        self.mode = "dark"  # Default
         self.unsaved_changes = False  # Track changes
         self.current_file_path = None  # Initialize current_file_path
-        self.root.bind('<Control-s>', lambda event: self.save_changes())
-        self.root.bind('<Control-S>', lambda event: self.save_document())
-        self.root.bind('<Control-r>', lambda event: self.open_document_in_browser())
-        self.root.bind('<Control-o>', lambda event: self.open_document())
-        self.root.bind('<Control-u>', lambda event: self.change_font_size())
-        self.root.bind('<Control-plus>', lambda event: self.increase_font_size())
-        self.root.bind('<Control-minus>', lambda event: self.decrease_font_size())
-        self.root.bind('<Control-f>', lambda event: self.find_replace())
-        
-
+        self.root.bind("<Control-s>", lambda event: self.save_changes())
+        self.root.bind("<Control-S>", lambda event: self.save_document())
+        self.root.bind("<Control-r>", lambda event: self.open_document_in_browser())
+        self.root.bind("<Control-o>", lambda event: self.open_document())
+        self.root.bind("<Control-u>", lambda event: self.change_font_size())
+        self.root.bind("<Control-plus>", lambda event: self.increase_font_size())
+        self.root.bind("<Control-minus>", lambda event: self.decrease_font_size())
+        self.root.bind("<Control-f>", lambda event: self.find_replace())
 
         if pillow_imported:
             icon = Image.open("favicon.ico")
@@ -92,7 +94,7 @@ class HTMLEditor:
 
         self.infoButton = Button(
             self.menu_area,
-            width=20,
+            width=17,
             height=2,
             text="HTML Editor 1.0",
             bg="#ffff00",
@@ -167,6 +169,16 @@ class HTMLEditor:
             command=self.find_replace,
         )
         self.frButton.pack(side=LEFT)
+        self.settingsbutton = Button(
+            self.menu_area,
+            width=10,
+            height=2,
+            text="Settings",
+            bg="#4d4d4d",
+            fg="#ffffff",
+            command=self.settings_window,
+        )
+        self.settingsbutton.pack(side=LEFT)
 
         self.text_area = Text(
             self.root,
@@ -185,7 +197,7 @@ class HTMLEditor:
         tab_size = font.measure("       ")  # Edit this to change tab size to your needs
         self.text_area.config(tabs=tab_size)
         self.text_area.bind("<<Modified>>", self.on_text_change)
-        
+
         self.update_syntax_highlighting()  # Init syntax highlighting
 
     #####################################
@@ -223,13 +235,17 @@ class HTMLEditor:
         javascript_keyword_pattern = r"(?<![a-zA-Z0-9_])\b(var|let|const|function|if|else|for|while|return|switch|case|break|continue|try|catch|finally|async|await|import|export|class|extends|super|this|new|delete|instanceof|typeof|void|with|do|in|of|default|static|get|set|yield|throw|true|false|null|undefined)\b(?![a-zA-Z0-9_])"
 
         # String literal pattern
-        string_literal_pattern = r'(["\'])(?:(?=(\\?))\2.)*?\1'  # Matches strings in double or single quotes
+        string_literal_pattern = (
+            r'(["\'])(?:(?=(\\?))\2.)*?\1'  # Matches strings in double or single quotes
+        )
 
         # Integer pattern (not in a string and not in an HTML tag)
         integer_pattern = r'(?<![<"\'])\b\d+\b(?![>\'"])'  # Matches integers
 
         # px value pattern (not in a string and not in an HTML tag)
-        px_value_pattern = r'(?<![<"\'])\b\d+px\b(?![>\'"])'  # Matches numerals followed by 'px'
+        px_value_pattern = (
+            r'(?<![<"\'])\b\d+px\b(?![>\'"])'  # Matches numerals followed by 'px'
+        )
 
         # HTML tags
         for match in re.finditer(html_tag_pattern, content):
@@ -248,7 +264,11 @@ class HTMLEditor:
         # JavaScript comments
         for match in re.finditer(r"//.*?$", content, re.MULTILINE):
             start_index = match.start()
-            if not content[max(0, start_index - 7):start_index].strip().endswith(('http:', 'https:')):
+            if (
+                not content[max(0, start_index - 7) : start_index]
+                .strip()
+                .endswith(("http:", "https:"))
+            ):
                 self.text_area.tag_add(
                     "js_comment",
                     f"1.0 + {match.start()} chars",
@@ -320,23 +340,83 @@ class HTMLEditor:
             )
 
         # Configure tag colors (Edit this to change colors to your needs)
-        self.text_area.tag_config("html_tag", foreground="#66e0ff")                 # Light blue
-        self.text_area.tag_config("html_comment", foreground="#009900")             # Dark green
-        self.text_area.tag_config("js_comment", foreground="#009900")               # Dark green
-        self.text_area.tag_config("css_class", foreground="#ff00ff")                # Pink
-        self.text_area.tag_config("css_property", foreground="#00ffaa")             # Light green
-        self.text_area.tag_config("javascript_function", foreground="#ffcc00")      # Yellow orange 
-        self.text_area.tag_config("javascript_variable", foreground="#00ff00")      # Lime
-        self.text_area.tag_config("javascript_keyword", foreground="#ff0066")       # Red
-        self.text_area.tag_config("string_literal", foreground="#ff9933")           # Orange
-        self.text_area.tag_config("integer", foreground="#ffcc00")                  # Yellow orange
-        self.text_area.tag_config("px_value", foreground="#ffcc00")                 # Yellow orange
+        if self.mode == "dark":
+            self.text_area.tag_config("html_tag", foreground="#66e0ff")  # Light blue
+            self.text_area.tag_config(
+                "html_comment", foreground="#009900"
+            )  # Dark green
+            self.text_area.tag_config("js_comment", foreground="#009900")  # Dark green
+            self.text_area.tag_config("css_class", foreground="#ff00ff")  # Pink
+            self.text_area.tag_config(
+                "css_property", foreground="#00ffaa"
+            )  # Light green
+            self.text_area.tag_config(
+                "javascript_function", foreground="#ffcc00"
+            )  # Yellow orange
+            self.text_area.tag_config(
+                "javascript_variable", foreground="#00ff00"
+            )  # Lime
+            self.text_area.tag_config("javascript_keyword", foreground="#ff0066")  # Red
+            self.text_area.tag_config("string_literal", foreground="#ff9933")  # Orange
+            self.text_area.tag_config("integer", foreground="#ffcc00")  # Yellow orange
+            self.text_area.tag_config("px_value", foreground="#ffcc00")  # Yellow orange
+
+        if self.mode == "light":
+            self.text_area.tag_config("html_tag", foreground="#003399")  # Dark blue
+            self.text_area.tag_config("html_comment", foreground="#008000")  # Green
+            self.text_area.tag_config("js_comment", foreground="#008000")  # Green
+            self.text_area.tag_config("css_class", foreground="#800080")  # Purple
+            self.text_area.tag_config("css_property", foreground="#003399")  # Dark blue
+            self.text_area.tag_config(
+                "javascript_function", foreground="#ff8c00"
+            )  # Dark orange
+            self.text_area.tag_config(
+                "javascript_variable", foreground="#0000ff"
+            )  # Blue
+            self.text_area.tag_config("javascript_keyword", foreground="#ff0000")  # Red
+            self.text_area.tag_config("string_literal", foreground="#cc6600")  # Brown
+            self.text_area.tag_config("integer", foreground="#0000ff")  # Blue
+            self.text_area.tag_config("px_value", foreground="#0000ff")  # Blue
+
+        if self.mode == "high_contrast":
+            self.text_area.tag_config("html_tag", foreground="#66e0ff")  # Light
+            self.text_area.tag_config(
+                "html_comment", foreground="#009900"
+            )  # Dark green
+            self.text_area.tag_config("js_comment", foreground="#009900")  # Dark green
+            self.text_area.tag_config("css_class", foreground="#ff3399")  # Pink
+            self.text_area.tag_config(
+                "css_property", foreground="#00ffaa"
+            )  # Light green
+            self.text_area.tag_config(
+                "javascript_function", foreground="#ffcc00"
+            )  # Yellow orange
+            self.text_area.tag_config(
+                "javascript_variable", foreground="#00ff00"
+            )  # Lime
+            self.text_area.tag_config("javascript_keyword", foreground="#ff0066")  # Red
+            self.text_area.tag_config("string_literal", foreground="#ff9933")  # Orange
+            self.text_area.tag_config("integer", foreground="#ffcc00")  # Yellow orange
+            self.text_area.tag_config("px_value", foreground="#ffcc00")  # Yellow orange
+            
+        if self.mode == "black_white":
+            self.text_area.tag_config("html_tag", foreground="#666666")
+            self.text_area.tag_config("html_comment", foreground="#000000")
+            self.text_area.tag_config("js_comment", foreground="#000000")
+            self.text_area.tag_config("css_class", foreground="#666666")
+            self.text_area.tag_config("css_property", foreground="#666666")
+            self.text_area.tag_config("javascript_function", foreground="#666666")
+            self.text_area.tag_config("javascript_variable", foreground="#666666")
+            self.text_area.tag_config("javascript_keyword", foreground="#666666")
+            self.text_area.tag_config("string_literal", foreground="#000000")
+            self.text_area.tag_config("integer", foreground="#000000")
+            self.text_area.tag_config("px_value", foreground="#000000")
 
         # Schedule next update
         self.root.after(100, self.update_syntax_highlighting)
 
     #####################################
-    # Save, open, autosave functions
+    # Save, open, autosave functions, title bar update
     #####################################
 
     def on_text_change(self, event):
@@ -405,23 +485,21 @@ class HTMLEditor:
         except Exception as e:
             messagebox.showerror("Error", f"Failed to open document: {str(e)}")
 
-
-
     def update_title(self):
         if self.current_file_path:  # Check if current_file_path is set
             if self.unsaved_changes:
-                self.root.title(f"HTML Editor - {os.path.basename(self.current_file_path)}*")
+                self.root.title(
+                    f"HTML Editor - {os.path.basename(self.current_file_path)}*"
+                )
             else:
-                self.root.title(f"HTML Editor - {os.path.basename(self.current_file_path)}")
+                self.root.title(
+                    f"HTML Editor - {os.path.basename(self.current_file_path)}"
+                )
         else:
-            self.root.title("HTML Editor - Untitled Document")  # Default title if no file is opened
+            self.root.title(
+                "HTML Editor - Untitled Document"
+            )  # Default title if no file is opened
 
-
-
-
-
-
-    
     def auto_save(self):
         self.save_changes()
         self.root.after(
@@ -473,25 +551,91 @@ class HTMLEditor:
 
     def decrease_font_size(self):
         current_font = tkfont.Font(font=self.text_area.cget("font"))
-        new_size = max(1, current_font.actual("size") - 1)  # Prevents font size from going below 1
+        new_size = max(
+            1, current_font.actual("size") - 1
+        )  # Prevents font size from going below 1
         self.text_area.config(font=("Consolas", new_size))
 
-
-
     #####################################
-    # Information window
+    # Information, settings window
     #####################################
 
     def info_window(self):
         top = Toplevel(self.root)
         top.title("About")
-        top.geometry("300x100")
+        top.geometry("300x150")
         top.config(bg="#333333")
         top.resizable(False, False)
+        # app logo
+        # Load and resize the logo
+        logo = Image.open("logo.png")
+        logo = logo.resize((50, 50))  # Resize to 100x100 pixels
+        logo = ImageTk.PhotoImage(logo)
+
+        logo_label = Label(top, image=logo)
+        logo_label.image = logo  # Keep a reference to avoid garbage collection
+        logo_label.pack()
         Label(top, text="HTML Editor", fg="#ffffff", bg="#333333").pack()
         Label(top, text="Version 1.0", fg="#ffffff", bg="#333333").pack()
         Label(top, text="Copyright 2024", fg="#ffffff", bg="#333333").pack()
         Label(top, text="Author: Tobias Kisling", fg="#ffffff", bg="#333333").pack()
+
+    def settings_window(self):
+        top = Toplevel(self.root)
+        top.title("Settings")
+        top.geometry("600x600")
+        top.config(bg="#333333")
+        top.resizable(False, False)
+        Label(
+            top, text="Settings", font=("TkDefaultFont", 20), fg="#ffffff", bg="#333333"
+        ).pack()
+        ttk.Separator(top, orient="horizontal").pack(fill="x", padx=10, pady=10)
+        Label(
+            top,
+            text="Appearance",
+            font=("TkDefaultFont", 15),
+            fg="#ffffff",
+            bg="#333333",
+        ).pack()
+        button_frame1 = Frame(top, width=200, height=20, bg="#333333")
+        button_frame1.pack()
+        Button(
+            button_frame1,
+            text="Light mode",
+            font=("TkDefaultFont"),
+            fg="#ffffff",
+            bg="#333333",
+            command=self.change_to_light_mode,
+        ).pack(side=LEFT, padx=5, pady=20)
+        Button(
+            button_frame1,
+            text="Dark mode",
+            font=("TkDefaultFont"),
+            fg="#ffffff",
+            bg="#333333",
+            command=self.change_to_dark_mode,
+        ).pack(side=LEFT, padx=5, pady=20)
+        Button(
+            button_frame1,
+            text="High contrast mode",
+            font=("TkDefaultFont"),
+            fg="#ffffff",
+            bg="#333333",
+            command=self.change_to_high_contrast_mode,
+        ).pack(side=LEFT, padx=5, pady=20)
+        Button(
+            button_frame1,
+            text="Black/White mode",
+            font=("TkDefaultFont"),
+            fg="#ffffff",
+            bg="#333333",
+            command=self.change_to_black_white_mode,
+        ).pack(side=LEFT, padx=5, pady=20)
+        ttk.Separator(top, orient="horizontal").pack(fill="x", padx=10, pady=10)
+
+    #####################################
+    # Find/Replace
+    #####################################
 
     def find_replace(self):
         # Create a Toplevel window for find and replace
@@ -499,13 +643,17 @@ class HTMLEditor:
         find_replace_window.title("Find and Replace")
         find_replace_window.geometry("400x200")
         find_replace_window.config(bg="#333333")
-        
+
         # Create labels and entry fields
-        Label(find_replace_window, text="Find:", bg="#333333", fg="#ffffff").pack(pady=10)
+        Label(find_replace_window, text="Find:", bg="#333333", fg="#ffffff").pack(
+            pady=10
+        )
         find_entry = Entry(find_replace_window, width=40)
         find_entry.pack(pady=5)
 
-        Label(find_replace_window, text="Replace with:", bg="#333333", fg="#ffffff").pack(pady=10)
+        Label(
+            find_replace_window, text="Replace with:", bg="#333333", fg="#ffffff"
+        ).pack(pady=10)
         replace_entry = Entry(find_replace_window, width=40)
         replace_entry.pack(pady=5)
 
@@ -513,32 +661,38 @@ class HTMLEditor:
         def perform_find_replace():
             find_text = find_entry.get()
             replace_text = replace_entry.get()
-            
+
             # Check if the find_text is empty
             if not find_text:
                 messagebox.showwarning("Input Error", "Please enter text to find.")
                 return  # Exit the function if no text is provided
 
             content = self.text_area.get("1.0", END)
-            
+
             # Clear previous highlights
             self.text_area.tag_remove("highlight", "1.0", END)
-            
+
             # Search for the text and highlight matches
             start_index = 0
             matches = 0
-            
+
             while True:
                 start_index = content.find(find_text, start_index)
                 if start_index == -1:
                     break
                 matches += 1
                 end_index = start_index + len(find_text)
-                self.text_area.tag_add("highlight", f"1.0 + {start_index} chars", f"1.0 + {end_index} chars")
+                self.text_area.tag_add(
+                    "highlight",
+                    f"1.0 + {start_index} chars",
+                    f"1.0 + {end_index} chars",
+                )
                 start_index += len(find_text)  # Move past the last found match
 
             # Update the text area to reflect the highlights
-            self.text_area.tag_config("highlight", background="#ffcc00")  # Highlight color
+            self.text_area.tag_config(
+                "highlight", background="#ffcc00"
+            )  # Highlight color
             self.text_area.mark_set("insert", "1.0")  # Reset cursor position
             self.text_area.see("1.0")  # Scroll to the top
 
@@ -556,16 +710,102 @@ class HTMLEditor:
             self.text_area.tag_remove("highlight", "1.0", END)
 
         # Bind the clear_highlights function to the window's destroy event
-        find_replace_window.protocol("WM_DELETE_WINDOW", lambda: (clear_highlights(), find_replace_window.destroy()))
+        find_replace_window.protocol(
+            "WM_DELETE_WINDOW",
+            lambda: (clear_highlights(), find_replace_window.destroy()),
+        )
 
         # Create a button to execute the find and replace
-        replace_button = Button(find_replace_window, text="Find and Replace", command=perform_find_replace, bg="#0099cc", fg="#ffffff")
+        replace_button = Button(
+            find_replace_window,
+            text="Find and Replace",
+            command=perform_find_replace,
+            bg="#0099cc",
+            fg="#ffffff",
+        )
         replace_button.pack(pady=20)
 
         # Create a button to close the window
-        close_button = Button(find_replace_window, text="Close", command=lambda: (clear_highlights(), find_replace_window.destroy()), bg="#ff0066", fg="#ffffff")
+        close_button = Button(
+            find_replace_window,
+            text="Close",
+            command=lambda: (clear_highlights(), find_replace_window.destroy()),
+            bg="#ff0066",
+            fg="#ffffff",
+        )
         close_button.pack(pady=5)
 
+    #####################################
+    # Appearance modes
+    #####################################
+
+    def change_to_light_mode(self):
+        self.mode = "light"  # Set mode
+        # Change root window bg/fg
+        self.root.config(bg="#ffffff")
+        self.text_area.config(bg="#ffffff", fg="#000000", insertbackground="#000000")
+
+        # Menu area button colors
+        self.infoButton.config(bg="#ffff00", fg="#4d4d4d")
+        self.autoSaveEnableButton.config(bg="#0099cc", fg="#f0f0f0")
+        self.saveAsButton.config(bg="#3366cc", fg="#f0f0f0")
+        self.saveButton.config(bg="#3366cc", fg="#f0f0f0")
+        self.openButton.config(bg="#ff0066", fg="#f0f0f0")
+        self.runButton.config(bg="#ff6600")
+        self.viewButton.config(bg="#339933")
+        self.frButton.config(bg="#ff33cc")
+        self.settingsbutton.config(bg="#333333", fg="#f0f0f0")
+
+    def change_to_dark_mode(self):
+        self.mode = "dark"  # Set mode
+        # Change root window bg/fg
+        self.root.config(bg="#2B2B2B")
+        self.text_area.config(bg="#333333", fg="#f0f0f0", insertbackground="#f0f0f0")
+
+        # Menu area button colors
+        self.infoButton.config(bg="#ffff00", fg="#4d4d4d")
+        self.autoSaveEnableButton.config(bg="#0099cc", fg="#f0f0f0")
+        self.saveAsButton.config(bg="#3366cc", fg="#f0f0f0")
+        self.saveButton.config(bg="#3366cc", fg="#f0f0f0")
+        self.openButton.config(bg="#ff0066", fg="#f0f0f0")
+        self.runButton.config(bg="#ff6600")
+        self.viewButton.config(bg="#339933")
+        self.frButton.config(bg="#ff33cc")
+        self.settingsbutton.config(bg="#333333", fg="#f0f0f0")
+
+    def change_to_high_contrast_mode(self):
+        self.mode = "high_contrast"  # Set mode
+        # Change root window bg/fg
+        self.root.config(bg="#000000")
+        self.text_area.config(bg="#000000", fg="#ffffff", insertbackground="#ffffff")
+
+        # Menu area button colors
+        self.infoButton.config(bg="#ffffff", fg="#000000")
+        self.autoSaveEnableButton.config(bg="#0099cc", fg="#ffffff")
+        self.saveAsButton.config(bg="#3366cc", fg="#ffffff")
+        self.saveButton.config(bg="#3366cc", fg="#ffffff")
+        self.openButton.config(bg="#ff0066", fg="#ffffff")
+        self.runButton.config(bg="#ff6600")
+        self.viewButton.config(bg="#339933")
+        self.frButton.config(bg="#ff33cc")
+        self.settingsbutton.config(bg="#333333", fg="#f0f0f0")
+
+    def change_to_black_white_mode(self):
+        self.mode = "black_white"  # Set mode
+        # Change root window bg/fg
+        self.root.config(bg="#ffffff")
+        self.text_area.config(bg="#ffffff", fg="#000000", insertbackground="#000000")
+
+        # Menu area button colors
+        self.infoButton.config(bg="#ffffff", fg="#000000")
+        self.autoSaveEnableButton.config(bg="#ffffff", fg="#000000")
+        self.saveAsButton.config(bg="#ffffff", fg="#000000")
+        self.saveButton.config(bg="#ffffff", fg="#000000")
+        self.openButton.config(bg="#ffffff", fg="#000000")
+        self.runButton.config(bg="#ffffff", fg="#000000")
+        self.viewButton.config(bg="#ffffff", fg="#000000")
+        self.frButton.config(bg="#ffffff", fg="#000000")
+        self.settingsbutton.config(bg="#ffffff", fg="#000000")
 
     #####################################
     # Add exit confirmation method
@@ -573,11 +813,14 @@ class HTMLEditor:
 
     def confirm_exit(self):
         if self.unsaved_changes:  # Check if there are unsaved changes
-            response = messagebox.askyesno("Confirm Exit", "You have unsaved changes. Do you really want to exit?")
+            response = messagebox.askyesno(
+                "Confirm Exit", "You have unsaved changes. Do you really want to exit?"
+            )
             if response:  # If user confirms, exit the application
                 self.root.destroy()
         else:
             self.root.destroy()  # Exit without confirmation if no unsaved changes
+
 
 #####################################
 # Init main class

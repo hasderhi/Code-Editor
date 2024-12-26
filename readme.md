@@ -6,7 +6,7 @@ This is my HTML, CSS and JavaScript editor written in Python. Even though it use
 
 ## Why use this editor?
 
-This editor serves as an excellent resource for web developers looking to write and execute their code within their Python environment.
+This editor serves as an excellent resource for web developers planning to write and execute their code within their Python environment.
 It is also an ideal learning platform for beginners eager to learn coding, as the editor is straightforward and user-friendly.
 
 Additionally, the editor allows for easy configuration by altering the Python code.

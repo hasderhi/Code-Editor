@@ -1,7 +1,11 @@
 #####################################
-# Import necessary libraries
+# HTMLeditor v1.0.4 - Source
 #####################################
 
+
+#####################################
+# Import necessary libraries
+#####################################
 win = False  # Windows flag is set to false
 
 try:
@@ -18,12 +22,14 @@ try:
 
     if os.name == "nt":  # If system is win32, import ctypes and set flag to true
         import ctypes
+
         win = True
 
 except Exception as e:
     print(f"Error importing modules: {e}")
     try:
         from tkinter import messagebox
+
         messagebox.showerror("Error", f"Error importing modules: {e}")
         sys.exit(1)
     except Exception as e:
@@ -31,7 +37,8 @@ except Exception as e:
         sys.exit(1)
 
 try:
-    from PIL import Image, ImageTk, ImageDraw, ImageFont  # Try to import Pillow modules
+    from PIL import Image, ImageTk  # Try to import Pillow modules
+
     pillow_imported = True
 except ImportError:
     pillow_imported = False
@@ -55,16 +62,17 @@ class HTMLEditor:
     #####################################
     # Init tkinter, set up main window
     #####################################
-
     def init():
+        "Starter function of the editor."
         root = Tk()
         editor = HTMLEditor(root)
-        root.protocol("WM_DELETE_WINDOW", editor.confirm_exit)  # Bind the close event
+        root.protocol("WM_DELETE_WINDOW", editor.confirm_exit)  # Bind close event
         root.mainloop()
 
     def __init__(self, root):
+        "Main init function of the editor"
         self.root = root
-        self.root.title(f"HTML Editor - Untitled Document")
+        self.root.title(f"HTML Editor - Untitled Document")  # Default
         self.root.geometry("800x600")
         self.root.config(bg="#2B2B2B")
         self.root.resizable(True, True)
@@ -72,16 +80,39 @@ class HTMLEditor:
         self.unsaved_changes = False  # Track changes
         self.safe_mode = False  # Track if safe mode is enabled
         self.current_file_path = None  # Initialize current_file_path
-        self.root.bind("<Control-s>", lambda event: self.save_changes())
-        self.root.bind("<Control-S>", lambda event: self.save_document())
-        self.root.bind("<Control-r>", lambda event: self.open_document_in_browser())
-        self.root.bind("<Control-o>", lambda event: self.open_document())
-        self.root.bind("<Control-u>", lambda event: self.change_font_size())
-        self.root.bind("<Control-plus>", lambda event: self.increase_font_size())
-        self.root.bind("<Control-minus>", lambda event: self.decrease_font_size())
-        self.root.bind("<Control-f>", lambda event: self.find_replace())
+        self.set_icon()  # Init icon function
 
-        self.set_icon()
+        #####################################
+        # Bind keys on functions
+        #####################################
+
+        self.root.bind(
+            "<Control-s>", lambda event: self.save_changes()
+        )  # CTRL_S         >   Save
+        self.root.bind(
+            "<Control-S>", lambda event: self.save_document()
+        )  # CTRL_SHIFT_S   >   Save as
+        self.root.bind(
+            "<Control-n>", lambda event: self.new_document()
+        )  # CTRL_N         >   New Document
+        self.root.bind(
+            "<Control-r>", lambda event: self.open_document_in_browser()
+        )  # CTRL_R         >   "Run" Document
+        self.root.bind(
+            "<Control-o>", lambda event: self.open_document()
+        )  # CTRL_O         >   Open Document
+        self.root.bind(
+            "<Control-u>", lambda event: self.change_zoom()
+        )  # CTRL_U         >   Zoom window
+        self.root.bind(
+            "<Control-plus>", lambda event: self.increase_font_size()
+        )  # CTRL_+         >   Zoom +
+        self.root.bind(
+            "<Control-minus>", lambda event: self.decrease_font_size()
+        )  # CTRL_-         >   Zoom -
+        self.root.bind(
+            "<Control-f>", lambda event: self.find_replace()
+        )  # CTRL_F         >   Find and Replace
 
         #####################################
         # Init widgets, set up text area
@@ -101,13 +132,13 @@ class HTMLEditor:
         )
         self.infoButton.pack(side=LEFT)
         self.newButton = Button(
-        self.menu_area,
-        width=10,
-        height=2,
-        text="New",
-        bg="#ffcc00",
-        fg="#000000",
-        command=self.new_document,
+            self.menu_area,
+            width=10,
+            height=2,
+            text="New",
+            bg="#ffcc00",
+            fg="#000000",
+            command=self.new_document,
         )
         self.newButton.pack(side=LEFT)
         self.saveAsButton = Button(
@@ -155,7 +186,7 @@ class HTMLEditor:
             height=2,
             text="Zoom",
             bg="#339933",
-            command=self.change_font_size,
+            command=self.change_zoom,
         )
         self.viewButton.pack(side=LEFT)
         self.frButton = Button(
@@ -194,12 +225,12 @@ class HTMLEditor:
         font = tkfont.Font(font=self.text_area["font"])
         tab_size = font.measure("       ")  # Edit this to change tab size to your needs
         self.text_area.config(tabs=tab_size)
-        self.text_area.bind("<<Modified>>", self.on_text_change)
+        self.text_area.bind("<<Modified>>", self.on_text_change)  # Track changes
 
         self.update_syntax_highlighting()  # Init syntax highlighting
-    
+
     def set_icon(self):
-        """Set the application icon."""
+        """Sets the application icon."""
         if pillow_imported:
             try:
                 icon = Image.open("favicon.ico")
@@ -207,11 +238,13 @@ class HTMLEditor:
                 self.root.iconphoto(True, icon)
             except Exception as e:
                 print(f"Error setting icon: {e}")
+
     #####################################
     # Highlight syntax
     #####################################
 
     def update_syntax_highlighting(self):
+        "Highlights HTML, CSS and JS keywords and tags in the code."
         # Clear previous tags
         self.text_area.tag_remove("html_tag", "1.0", END)
         self.text_area.tag_remove("css_class", "1.0", END)
@@ -405,7 +438,7 @@ class HTMLEditor:
             self.text_area.tag_config("string_literal", foreground="#ff9933")  # Orange
             self.text_area.tag_config("integer", foreground="#ffcc00")  # Yellow orange
             self.text_area.tag_config("px_value", foreground="#ffcc00")  # Yellow orange
-            
+
         if self.mode == "black_white":
             self.text_area.tag_config("html_tag", foreground="#666666")
             self.text_area.tag_config("html_comment", foreground="#000000")
@@ -427,27 +460,35 @@ class HTMLEditor:
     #####################################
 
     def new_document(self):
-        # Create a new instance of HTMLEditor for a new window
+        "Creates a new instance of HTMLEditor for a new window"
         new_root = Tk()  # Create a new root window
         new_editor = HTMLEditor(new_root)  # Initialize the HTMLEditor with the new root
         new_editor.set_icon()  # Set the icon for the new window
         new_root.mainloop()  # Start the main loop for the new window
 
     def toggle_safe_mode(self):
+        """Toggles safe mode on and off."""
         self.safe_mode = not self.safe_mode  # Toggle the safe mode flag
-        self.text_area.config(state=DISABLED if self.safe_mode else NORMAL)  # Enable/disable editing
+        self.text_area.config(
+            state=DISABLED if self.safe_mode else NORMAL
+        )  # Enable/disable editing
         if self.safe_mode:
-            messagebox.showinfo("Safe Mode", "Safe mode is now enabled. You cannot edit the document.")
+            messagebox.showinfo(
+                "Safe Mode", "Safe mode is now enabled. You cannot edit the document."
+            )
         else:
-            messagebox.showinfo("Safe Mode", "Safe mode is now disabled. You can edit the document.")
+            messagebox.showinfo(
+                "Safe Mode", "Safe mode is now disabled. You can edit the document."
+            )
 
     def on_text_change(self, event):
+        """Gets called if the text area is modified. Calls update functions."""
         self.unsaved_changes = True
         self.text_area.edit_modified(False)  # Reset the modified flag
         self.update_title()  # Update the title to reflect unsaved changes
 
     def save_document(self):
-        # Save the current document to a file
+        """Saves the current document to a new filepath"""
         try:
             file_path = filedialog.asksaveasfilename(
                 defaultextension=".html",
@@ -472,7 +513,7 @@ class HTMLEditor:
             messagebox.showerror("Error", f"Failed to save document: {str(e)}")
 
     def save_changes(self):
-        # Save the current document to a file
+        """Saves the current document to a file"""
         try:
             with open(self.current_file_path, "w") as file:
                 file.write(self.text_area.get("1.0", "end-1c"))
@@ -482,6 +523,7 @@ class HTMLEditor:
             self.save_document()
 
     def open_document(self):
+        """Opens a document from a file"""
         try:
             file_path = filedialog.askopenfilename(
                 defaultextension=".html",
@@ -502,13 +544,16 @@ class HTMLEditor:
                     self.current_file_path = file_path
                     self.unsaved_changes = False  # Reset unsaved changes flag
                     self.update_title()  # Update title
-                    self.text_area.config(state=DISABLED if self.safe_mode else NORMAL)  # Disable editing if in safe mode
+                    self.text_area.config(
+                        state=DISABLED if self.safe_mode else NORMAL
+                    )  # Disable editing if in safe mode
             else:
                 return
         except Exception as e:
             messagebox.showerror("Error", f"Failed to open document: {str(e)}")
 
     def update_title(self):
+        """Updates the title of the window based on the current file path and unsaved changes status"""
         if self.current_file_path:  # Check if current_file_path is set
             if self.unsaved_changes:
                 self.root.title(
@@ -524,6 +569,7 @@ class HTMLEditor:
             )  # Default title if no file is opened
 
     def auto_save(self):
+        """Saves the current document automatically at regular intervals"""
         self.save_changes()
         self.root.after(
             10000, self.auto_save
@@ -547,7 +593,8 @@ class HTMLEditor:
     # Font size (zoom)
     #####################################
 
-    def change_font_size(self):
+    def change_zoom(self):
+        """Creates a window to change the font size (zoom)"""
         top = Toplevel(self.root)
         top.geometry("300x100")
         top.title("Change Font Size")
@@ -558,21 +605,24 @@ class HTMLEditor:
             to=100,
             length=300,
             orient=HORIZONTAL,
-            command=self.update_font_size,
+            command=self.update_zoom,
         )
         self.slider.set(13)
         self.slider.pack()
         Button(top, text="Close", command=top.destroy).pack()
 
-    def update_font_size(self, value):
+    def update_zoom(self, value):
+        """Updates the font size (zoom) of the text area"""
         self.text_area.config(font=("Consolas", int(value)))
 
     def increase_font_size(self):
+        """Increases the font size (zoom) of the text area by 1 point"""
         current_font = tkfont.Font(font=self.text_area.cget("font"))
         new_size = current_font.actual("size") + 1
         self.text_area.config(font=("Consolas", new_size))
 
     def decrease_font_size(self):
+        """Decreases the font size (zoom) of the text area by 1 point"""
         current_font = tkfont.Font(font=self.text_area.cget("font"))
         new_size = max(
             1, current_font.actual("size") - 1
@@ -584,12 +634,12 @@ class HTMLEditor:
     #####################################
 
     def info_window(self):
+        """Creates a window with information about the application"""
         top = Toplevel(self.root)
         top.title("About")
         top.geometry("300x150")
         top.config(bg="#333333")
         top.resizable(False, False)
-        # app logo
         # Load and resize the logo
         logo = Image.open("logo.png")
         logo = logo.resize((50, 50))  # Resize to 100x100 pixels
@@ -598,23 +648,41 @@ class HTMLEditor:
         logo_label = Label(top, image=logo)
         logo_label.image = logo  # Keep a reference to avoid garbage collection
         logo_label.pack()
+
         Label(top, text="HTML Editor", fg="#ffffff", bg="#333333").pack()
         Label(top, text="Version 1.0", fg="#ffffff", bg="#333333").pack()
         Label(top, text="Copyright 2024", fg="#ffffff", bg="#333333").pack()
         Label(top, text="Author: Tobias Kisling", fg="#ffffff", bg="#333333").pack()
 
     def license_window(self):
+        """Creates a toplevel window with the license"""
         top = Toplevel(self.root)
         top.title("License")
         top.geometry("600x600")
         top.config(bg="#333333")
         top.resizable(False, False)
-        Label(top, font=("TkDefaultFont", 20),text="MIT License", fg="#ffffff", bg="#333333").pack()
-        Label(top, text="Copyright (c) 2024 Tobias Kisling (hasderhi)", fg="#ffffff", bg="#333333").pack()
-        Label(top, fg="#ffffff", bg="#333333",text="Permission is hereby granted, free of charge, \nto any person obtaining a copy of this software and associated\ndocumentation files (the 'Software'),\nto deal in the Software without restriction, including without limitation the rights to use,\ncopy, modify, merge, publish, distribute, sublicense,\nand/or sell copies of the Software, and to permit persons to\nwhom the Software is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be\nincluded in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED 'AS IS',\nWITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,\nINCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.\nIN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,\nDAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,\nARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR\nTHE USE OR OTHER DEALINGS IN THE SOFTWARE.\n\nHTML5 Logo by <https://www.w3.org/>").pack()
-
+        Label(
+            top,
+            font=("TkDefaultFont", 20),
+            text="MIT License",
+            fg="#ffffff",
+            bg="#333333",
+        ).pack()
+        Label(
+            top,
+            text="Copyright (c) 2024 Tobias Kisling (hasderhi)",
+            fg="#ffffff",
+            bg="#333333",
+        ).pack()
+        Label(
+            top,
+            fg="#ffffff",
+            bg="#333333",
+            text="Permission is hereby granted, free of charge, \nto any person obtaining a copy of this software and associated\ndocumentation files (the 'Software'),\nto deal in the Software without restriction, including without limitation the rights to use,\ncopy, modify, merge, publish, distribute, sublicense,\nand/or sell copies of the Software, and to permit persons to\nwhom the Software is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be\nincluded in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED 'AS IS',\nWITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,\nINCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.\nIN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,\nDAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,\nARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR\nTHE USE OR OTHER DEALINGS IN THE SOFTWARE.\n\nHTML5 Logo by <https://www.w3.org/>",
+        ).pack()
 
     def settings_window(self):
+        """Creates a toplevel window with settings"""
         top = Toplevel(self.root)
         top.title("Settings")
         top.geometry("600x600")
@@ -627,8 +695,7 @@ class HTMLEditor:
 
         # Configure the canvas
         scrollable_frame.bind(
-            "<Configure>",
-            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+            "<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
         )
 
         canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
@@ -638,17 +705,27 @@ class HTMLEditor:
 
         # Add mouse wheel scrolling
         def on_mouse_wheel(event):
-            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+            canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
 
         canvas.bind_all("<MouseWheel>", on_mouse_wheel)  # For Windows
-        canvas.bind_all("<Button-4>", lambda event: canvas.yview_scroll(-1, "units"))  # For Linux
-        canvas.bind_all("<Button-5>", lambda event: canvas.yview_scroll(1, "units"))  # For Linux
+        canvas.bind_all(
+            "<Button-4>", lambda event: canvas.yview_scroll(-1, "units")
+        )  # For Linux
+        canvas.bind_all(
+            "<Button-5>", lambda event: canvas.yview_scroll(1, "units")
+        )  # For Linux
 
         # Add your settings content here
         Label(
-            scrollable_frame, text="Settings", font=("TkDefaultFont", 20), fg="#ffffff", bg="#333333"
+            scrollable_frame,
+            text="Settings",
+            font=("TkDefaultFont", 20),
+            fg="#ffffff",
+            bg="#333333",
         ).pack(pady=10, anchor="center")
-        ttk.Separator(scrollable_frame, orient="horizontal").pack(fill="x", padx=10, pady=10)
+        ttk.Separator(scrollable_frame, orient="horizontal").pack(
+            fill="x", padx=10, pady=10
+        )
         Label(
             scrollable_frame,
             text="Appearance",
@@ -656,7 +733,7 @@ class HTMLEditor:
             fg="#ffffff",
             bg="#333333",
         ).pack(anchor="center")
-        
+
         button_frame1 = Frame(scrollable_frame, width=200, height=20, bg="#333333")
         button_frame1.pack(pady=10)
 
@@ -693,7 +770,9 @@ class HTMLEditor:
             command=self.change_to_black_white_mode,
         ).pack(side=LEFT, padx=5)
 
-        ttk.Separator(scrollable_frame, orient="horizontal").pack(fill="x", padx=10, pady=10)
+        ttk.Separator(scrollable_frame, orient="horizontal").pack(
+            fill="x", padx=10, pady=10
+        )
         Label(
             scrollable_frame,
             text="Safe Mode",
@@ -708,7 +787,7 @@ class HTMLEditor:
             fg="#ffffff",
             bg="#333333",
         ).pack(anchor="center")
-        
+
         button_frame2 = Frame(scrollable_frame, width=200, height=20, bg="#333333")
         button_frame2.pack(pady=10)
         Button(
@@ -719,7 +798,9 @@ class HTMLEditor:
             command=self.toggle_safe_mode,
         ).pack(side=LEFT, padx=5)
 
-        ttk.Separator(scrollable_frame, orient="horizontal").pack(fill="x", padx=10, pady=10)
+        ttk.Separator(scrollable_frame, orient="horizontal").pack(
+            fill="x", padx=10, pady=10
+        )
         Label(
             scrollable_frame,
             text="Auto Save",
@@ -734,7 +815,7 @@ class HTMLEditor:
             fg="#ffffff",
             bg="#333333",
         ).pack(anchor="center")
-        
+
         button_frame3 = Frame(scrollable_frame, width=200, height=20, bg="#333333")
         button_frame3.pack(pady=10)
         self.autoSaveEnableButton = Button(
@@ -746,7 +827,9 @@ class HTMLEditor:
         )
         self.autoSaveEnableButton.pack(side=LEFT, padx=5)
 
-        ttk.Separator(scrollable_frame, orient="horizontal").pack(fill="x", padx=10, pady=10)
+        ttk.Separator(scrollable_frame, orient="horizontal").pack(
+            fill="x", padx=10, pady=10
+        )
         Label(
             scrollable_frame,
             text="About and licensing",
@@ -754,7 +837,7 @@ class HTMLEditor:
             fg="#ffffff",
             bg="#333333",
         ).pack(anchor="center")
-        
+
         button_frame4 = Frame(scrollable_frame, width=200, height=20, bg="#333333")
         button_frame4.pack(pady=10)
         Button(
@@ -774,14 +857,12 @@ class HTMLEditor:
             command=self.license_window,
         ).pack(side=LEFT, padx=5)
 
-
-
     #####################################
     # Find/Replace
     #####################################
 
     def find_replace(self):
-        # Create a Toplevel window for find and replace
+        """Find and replace engine for HTMLEditor"""
         find_replace_window = Toplevel(self.root)
         find_replace_window.title("Find and Replace")
         find_replace_window.geometry("400x200")
@@ -883,6 +964,7 @@ class HTMLEditor:
     #####################################
 
     def change_to_light_mode(self):
+        """Changes to light mode"""
         self.mode = "light"  # Set mode
         # Change root window bg/fg
         self.root.config(bg="#ffffff")
@@ -900,6 +982,7 @@ class HTMLEditor:
         self.settingsbutton.config(bg="#333333", fg="#f0f0f0")
 
     def change_to_dark_mode(self):
+        """Changes to dark mode"""
         self.mode = "dark"  # Set mode
         # Change root window bg/fg
         self.root.config(bg="#2B2B2B")
@@ -917,6 +1000,7 @@ class HTMLEditor:
         self.settingsbutton.config(bg="#333333", fg="#f0f0f0")
 
     def change_to_high_contrast_mode(self):
+        """Changes to high contrast mode"""
         self.mode = "high_contrast"  # Set mode
         # Change root window bg/fg
         self.root.config(bg="#000000")
@@ -934,6 +1018,7 @@ class HTMLEditor:
         self.settingsbutton.config(bg="#333333", fg="#f0f0f0")
 
     def change_to_black_white_mode(self):
+        """Changes to black and white mode"""
         self.mode = "black_white"  # Set mode
         # Change root window bg/fg
         self.root.config(bg="#ffffff")
@@ -955,6 +1040,7 @@ class HTMLEditor:
     #####################################
 
     def confirm_exit(self):
+        """Confirms exit of the application"""
         if self.unsaved_changes:  # Check if there are unsaved changes
             response = messagebox.askyesno(
                 "Confirm Exit", "You have unsaved changes. Do you really want to exit?"

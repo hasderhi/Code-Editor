@@ -81,10 +81,7 @@ class HTMLEditor:
         self.root.bind("<Control-minus>", lambda event: self.decrease_font_size())
         self.root.bind("<Control-f>", lambda event: self.find_replace())
 
-        if pillow_imported:
-            icon = Image.open("favicon.ico")
-            icon = ImageTk.PhotoImage(icon)
-            self.root.iconphoto(True, icon)
+        self.set_icon()
 
         #####################################
         # Init widgets, set up text area
@@ -103,16 +100,16 @@ class HTMLEditor:
             command=self.info_window,
         )
         self.infoButton.pack(side=LEFT)
-        self.autoSaveEnableButton = Button(
-            self.menu_area,
-            width=15,
-            height=2,
-            text="Enable autosave",
-            bg="#0099cc",
-            fg="#f0f0f0",
-            command=self.auto_save,
+        self.newButton = Button(
+        self.menu_area,
+        width=10,
+        height=2,
+        text="New",
+        bg="#ffcc00",
+        fg="#000000",
+        command=self.new_document,
         )
-        self.autoSaveEnableButton.pack(side=LEFT)
+        self.newButton.pack(side=LEFT)
         self.saveAsButton = Button(
             self.menu_area,
             width=10,
@@ -200,7 +197,16 @@ class HTMLEditor:
         self.text_area.bind("<<Modified>>", self.on_text_change)
 
         self.update_syntax_highlighting()  # Init syntax highlighting
-
+    
+    def set_icon(self):
+        """Set the application icon."""
+        if pillow_imported:
+            try:
+                icon = Image.open("favicon.ico")
+                icon = ImageTk.PhotoImage(icon)
+                self.root.iconphoto(True, icon)
+            except Exception as e:
+                print(f"Error setting icon: {e}")
     #####################################
     # Highlight syntax
     #####################################
@@ -420,6 +426,13 @@ class HTMLEditor:
     # Save, open, autosave functions, title bar update
     #####################################
 
+    def new_document(self):
+        # Create a new instance of HTMLEditor for a new window
+        new_root = Tk()  # Create a new root window
+        new_editor = HTMLEditor(new_root)  # Initialize the HTMLEditor with the new root
+        new_editor.set_icon()  # Set the icon for the new window
+        new_root.mainloop()  # Start the main loop for the new window
+
     def toggle_safe_mode(self):
         self.safe_mode = not self.safe_mode  # Toggle the safe mode flag
         self.text_area.config(state=DISABLED if self.safe_mode else NORMAL)  # Enable/disable editing
@@ -607,19 +620,46 @@ class HTMLEditor:
         top.geometry("600x600")
         top.config(bg="#333333")
         top.resizable(False, False)
+
+        # Create a canvas
+        canvas = Canvas(top, bg="#333333")
+        scrollable_frame = Frame(canvas, bg="#333333")
+
+        # Configure the canvas
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+
+        # Pack the canvas
+        canvas.pack(side="left", fill="both", expand=True)
+
+        # Add mouse wheel scrolling
+        def on_mouse_wheel(event):
+            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+
+        canvas.bind_all("<MouseWheel>", on_mouse_wheel)  # For Windows
+        canvas.bind_all("<Button-4>", lambda event: canvas.yview_scroll(-1, "units"))  # For Linux
+        canvas.bind_all("<Button-5>", lambda event: canvas.yview_scroll(1, "units"))  # For Linux
+
+        # Add your settings content here
         Label(
-            top, text="Settings", font=("TkDefaultFont", 20), fg="#ffffff", bg="#333333"
-        ).pack()
-        ttk.Separator(top, orient="horizontal").pack(fill="x", padx=10, pady=10)
+            scrollable_frame, text="Settings", font=("TkDefaultFont", 20), fg="#ffffff", bg="#333333"
+        ).pack(pady=10, anchor="center")
+        ttk.Separator(scrollable_frame, orient="horizontal").pack(fill="x", padx=10, pady=10)
         Label(
-            top,
+            scrollable_frame,
             text="Appearance",
             font=("TkDefaultFont", 15),
             fg="#ffffff",
             bg="#333333",
-        ).pack()
-        button_frame1 = Frame(top, width=200, height=20, bg="#333333")
-        button_frame1.pack()
+        ).pack(anchor="center")
+        
+        button_frame1 = Frame(scrollable_frame, width=200, height=20, bg="#333333")
+        button_frame1.pack(pady=10)
+
         Button(
             button_frame1,
             text="Light mode",
@@ -627,7 +667,7 @@ class HTMLEditor:
             fg="#ffffff",
             bg="#333333",
             command=self.change_to_light_mode,
-        ).pack(side=LEFT, padx=5, pady=20)
+        ).pack(side=LEFT, padx=5)
         Button(
             button_frame1,
             text="Dark mode",
@@ -635,7 +675,7 @@ class HTMLEditor:
             fg="#ffffff",
             bg="#333333",
             command=self.change_to_dark_mode,
-        ).pack(side=LEFT, padx=5, pady=20)
+        ).pack(side=LEFT, padx=5)
         Button(
             button_frame1,
             text="High contrast mode",
@@ -643,7 +683,7 @@ class HTMLEditor:
             fg="#ffffff",
             bg="#333333",
             command=self.change_to_high_contrast_mode,
-        ).pack(side=LEFT, padx=5, pady=20)
+        ).pack(side=LEFT, padx=5)
         Button(
             button_frame1,
             text="Black/White mode",
@@ -651,57 +691,88 @@ class HTMLEditor:
             fg="#ffffff",
             bg="#333333",
             command=self.change_to_black_white_mode,
-        ).pack(side=LEFT, padx=5, pady=20)
-        ttk.Separator(top, orient="horizontal").pack(fill="x", padx=10, pady=10)
+        ).pack(side=LEFT, padx=5)
+
+        ttk.Separator(scrollable_frame, orient="horizontal").pack(fill="x", padx=10, pady=10)
         Label(
-            top,
+            scrollable_frame,
             text="Safe Mode",
             font=("TkDefaultFont", 15),
             fg="#ffffff",
             bg="#333333",
-        ).pack()
+        ).pack(anchor="center")
         Label(
-            top,
+            scrollable_frame,
             text="When safe mode is activated, the current document\ncannot be edited. This mode is intended for safe code browsing.\nPlease note that when this mode is activated, other documents cannot be opened\nuntil safe mode is disabled again.",
             font=("TkDefaultFont"),
             fg="#ffffff",
             bg="#333333",
-        ).pack()
-        button_frame2 = Frame(top, width=200, height=20, bg="#333333")
-        button_frame2.pack()
+        ).pack(anchor="center")
+        
+        button_frame2 = Frame(scrollable_frame, width=200, height=20, bg="#333333")
+        button_frame2.pack(pady=10)
         Button(
-        button_frame2,
-        text="Toggle Safe Mode",
-        bg="#ffcc00",
-        fg="#000000",
-        command=self.toggle_safe_mode,
-        ).pack(side=LEFT, padx=5, pady=20)
-        ttk.Separator(top, orient="horizontal").pack(fill="x", padx=10, pady=10)
+            button_frame2,
+            text="Toggle Safe Mode",
+            bg="#ffcc00",
+            fg="#000000",
+            command=self.toggle_safe_mode,
+        ).pack(side=LEFT, padx=5)
+
+        ttk.Separator(scrollable_frame, orient="horizontal").pack(fill="x", padx=10, pady=10)
         Label(
-            top,
+            scrollable_frame,
+            text="Auto Save",
+            font=("TkDefaultFont", 15),
+            fg="#ffffff",
+            bg="#333333",
+        ).pack(anchor="center")
+        Label(
+            scrollable_frame,
+            text=" When auto save is activated, the current document\nis saved every 10 seconds. Please note that the\n auto save can only be disabled by restarting.\n The developer will fix this soon!",
+            font=("TkDefaultFont"),
+            fg="#ffffff",
+            bg="#333333",
+        ).pack(anchor="center")
+        
+        button_frame3 = Frame(scrollable_frame, width=200, height=20, bg="#333333")
+        button_frame3.pack(pady=10)
+        self.autoSaveEnableButton = Button(
+            button_frame3,
+            text="Enable autosave",
+            bg="#0099cc",
+            fg="#f0f0f0",
+            command=self.auto_save,
+        )
+        self.autoSaveEnableButton.pack(side=LEFT, padx=5)
+
+        ttk.Separator(scrollable_frame, orient="horizontal").pack(fill="x", padx=10, pady=10)
+        Label(
+            scrollable_frame,
             text="About and licensing",
             font=("TkDefaultFont", 15),
             fg="#ffffff",
             bg="#333333",
-        ).pack()
-        button_frame3 = Frame(top, width=200, height=20, bg="#333333")
-        button_frame3.pack()
+        ).pack(anchor="center")
+        
+        button_frame4 = Frame(scrollable_frame, width=200, height=20, bg="#333333")
+        button_frame4.pack(pady=10)
         Button(
-            button_frame3,
+            button_frame4,
             text="About HTML editor",
             font=("TkDefaultFont"),
             fg="#ffffff",
             bg="#333333",
             command=self.info_window,
-        ).pack(side=LEFT, padx=5, pady=20)
+        ).pack(side=LEFT, padx=5)
         Button(
-            button_frame3,
+            button_frame4,
             text="Show license",
             font=("TkDefaultFont"),
             fg="#ffffff",
             bg="#333333",
             command=self.license_window,
-        ).pack(side=LEFT, padx=5, pady=20)
+        ).pack(side=LEFT, padx=5)
 
 
 

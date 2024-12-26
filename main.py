@@ -70,6 +70,7 @@ class HTMLEditor:
         self.root.resizable(True, True)
         self.mode = "dark"  # Default
         self.unsaved_changes = False  # Track changes
+        self.safe_mode = False  # Track if safe mode is enabled
         self.current_file_path = None  # Initialize current_file_path
         self.root.bind("<Control-s>", lambda event: self.save_changes())
         self.root.bind("<Control-S>", lambda event: self.save_document())
@@ -419,6 +420,14 @@ class HTMLEditor:
     # Save, open, autosave functions, title bar update
     #####################################
 
+    def toggle_safe_mode(self):
+        self.safe_mode = not self.safe_mode  # Toggle the safe mode flag
+        self.text_area.config(state=DISABLED if self.safe_mode else NORMAL)  # Enable/disable editing
+        if self.safe_mode:
+            messagebox.showinfo("Safe Mode", "Safe mode is now enabled. You cannot edit the document.")
+        else:
+            messagebox.showinfo("Safe Mode", "Safe mode is now disabled. You can edit the document.")
+
     def on_text_change(self, event):
         self.unsaved_changes = True
         self.text_area.edit_modified(False)  # Reset the modified flag
@@ -480,6 +489,7 @@ class HTMLEditor:
                     self.current_file_path = file_path
                     self.unsaved_changes = False  # Reset unsaved changes flag
                     self.update_title()  # Update title
+                    self.text_area.config(state=DISABLED if self.safe_mode else NORMAL)  # Disable editing if in safe mode
             else:
                 return
         except Exception as e:
@@ -580,6 +590,17 @@ class HTMLEditor:
         Label(top, text="Copyright 2024", fg="#ffffff", bg="#333333").pack()
         Label(top, text="Author: Tobias Kisling", fg="#ffffff", bg="#333333").pack()
 
+    def license_window(self):
+        top = Toplevel(self.root)
+        top.title("License")
+        top.geometry("600x600")
+        top.config(bg="#333333")
+        top.resizable(False, False)
+        Label(top, font=("TkDefaultFont", 20),text="MIT License", fg="#ffffff", bg="#333333").pack()
+        Label(top, text="Copyright (c) 2024 Tobias Kisling (hasderhi)", fg="#ffffff", bg="#333333").pack()
+        Label(top, fg="#ffffff", bg="#333333",text="Permission is hereby granted, free of charge, \nto any person obtaining a copy of this software and associated\ndocumentation files (the 'Software'),\nto deal in the Software without restriction, including without limitation the rights to use,\ncopy, modify, merge, publish, distribute, sublicense,\nand/or sell copies of the Software, and to permit persons to\nwhom the Software is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be\nincluded in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED 'AS IS',\nWITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,\nINCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.\nIN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,\nDAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,\nARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR\nTHE USE OR OTHER DEALINGS IN THE SOFTWARE.\n\nHTML5 Logo by <https://www.w3.org/>").pack()
+
+
     def settings_window(self):
         top = Toplevel(self.root)
         top.title("Settings")
@@ -632,6 +653,57 @@ class HTMLEditor:
             command=self.change_to_black_white_mode,
         ).pack(side=LEFT, padx=5, pady=20)
         ttk.Separator(top, orient="horizontal").pack(fill="x", padx=10, pady=10)
+        Label(
+            top,
+            text="Safe Mode",
+            font=("TkDefaultFont", 15),
+            fg="#ffffff",
+            bg="#333333",
+        ).pack()
+        Label(
+            top,
+            text="When safe mode is activated, the current document\ncannot be edited. This mode is intended for safe code browsing.\nPlease note that when this mode is activated, other documents cannot be opened\nuntil safe mode is disabled again.",
+            font=("TkDefaultFont"),
+            fg="#ffffff",
+            bg="#333333",
+        ).pack()
+        button_frame2 = Frame(top, width=200, height=20, bg="#333333")
+        button_frame2.pack()
+        Button(
+        button_frame2,
+        text="Toggle Safe Mode",
+        bg="#ffcc00",
+        fg="#000000",
+        command=self.toggle_safe_mode,
+        ).pack(side=LEFT, padx=5, pady=20)
+        ttk.Separator(top, orient="horizontal").pack(fill="x", padx=10, pady=10)
+        Label(
+            top,
+            text="About and licensing",
+            font=("TkDefaultFont", 15),
+            fg="#ffffff",
+            bg="#333333",
+        ).pack()
+        button_frame3 = Frame(top, width=200, height=20, bg="#333333")
+        button_frame3.pack()
+        Button(
+            button_frame3,
+            text="About HTML editor",
+            font=("TkDefaultFont"),
+            fg="#ffffff",
+            bg="#333333",
+            command=self.info_window,
+        ).pack(side=LEFT, padx=5, pady=20)
+        Button(
+            button_frame3,
+            text="Show license",
+            font=("TkDefaultFont"),
+            fg="#ffffff",
+            bg="#333333",
+            command=self.license_window,
+        ).pack(side=LEFT, padx=5, pady=20)
+
+
 
     #####################################
     # Find/Replace
@@ -786,7 +858,7 @@ class HTMLEditor:
         self.saveButton.config(bg="#3366cc", fg="#ffffff")
         self.openButton.config(bg="#ff0066", fg="#ffffff")
         self.runButton.config(bg="#ff6600")
-        self.viewButton.config(bg="#339933")
+        self.viewButton.config(bg="#00ff00")
         self.frButton.config(bg="#ff33cc")
         self.settingsbutton.config(bg="#333333", fg="#f0f0f0")
 

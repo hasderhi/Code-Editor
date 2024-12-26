@@ -1,5 +1,5 @@
 #####################################
-# HTMLeditor v1.0.4 - Source
+# HTMLeditor v1.0.5 - Source
 #####################################
 
 
@@ -38,7 +38,6 @@ except Exception as e:
 
 try:
     from PIL import Image, ImageTk  # Try to import Pillow modules
-
     pillow_imported = True
 except ImportError:
     pillow_imported = False

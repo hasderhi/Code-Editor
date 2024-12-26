@@ -1,26 +1,80 @@
 # HTML Editor
 
+![Html Editor logo](logo.png)
+
 This is my HTML, CSS and JavaScript editor written in Python. Even though it uses just one external library (Pillow for icons), it has some functions like syntax highlighting for HTML, CSS and JavaScript code, an autosave function and a function to run the code with one click directly in the program.
 
-## Starting with the program
+## Why use this editor?
+
+This editor serves as an excellent resource for web developers looking to write and execute their code within their Python environment.
+It is also an ideal learning platform for beginners eager to learn coding, as the editor is straightforward and user-friendly.
+
+Additionally, the editor allows for easy configuration by altering the Python code.
+If you wish to make changes or add new features, you can simply modify the Python files.
+
+## Starting with the editor
 
 ### Installation
 
-1. Install python
+1. Install Python 3.x
 2. Install the pillow library with ```pip install pillow``` (You can skip this if you don't need icons)
-3. Run the program with python (python3 for python 3.x)
+
+### Running
+
+Run the program with ```python 3.x```
+
+- Run the ```.py``` file for console access
+- Run the ```.pyw``` file for no console
 
 ## Using the editor
 
-In the main window, start writing your code. The editor will mark keywords, variables, function and more.
+In the main window, start writing your code. The editor will mark keywords, variables, functions and more.
 **Note: The editor does not mark errors in the code (yet).**
 
-With the ```save as``` button you can save your file in a specific directory.
-With the ```save``` you can save your changes. The ```enable autosave``` function saves your file every 10 seconds.
-```open``` does exactly what it says... it opens a file from your computer.
-The ```zoom``` function changes the font size.
+### Menu Bar
 
-The ```run``` function runs the Code in a seperate window.
+In the menu bar, you will find the following buttons:
+
+- HTML Editor 1.0 (This opens an about window with informations about the program)
+- New (This opens a new window with a new file)
+- Save as (This saves the current document to a specified file path)
+- Save (This saves changes to the document; will prompt for a file path if the file was not saved previously)
+- Open (This opens a file from your computer)
+- Run (This runs the current document in the default browser)
+- Zoom (Changes the text size)
+- Find/Replace (Finds a given string in the text and replaces it if another string is given)
+- Settings (Opens the settings window)
+
+### Syntax Highlighting
+
+The editor uses Python regular expressions to highlight HTML, CSS and JavaScript tags, keywords, variables, strings, integers, functions and comments. As the highlighting engine is improved constantly, support for other languages is coming soon.
+
+### Auto Save
+
+If activated the editor will automatically save your changes every 10 seconds. You can change the interval in line 547:
+
+```python
+def auto_save(self):
+        """Saves the current document automatically at regular intervals"""
+        self.save_changes()
+        self.root.after(
+            10000, self.auto_save # <-- Here
+        )
+```
+
+Note: Once activated, the function can only be disabled by restarting. This will be fixed in later updates.
+
+### Appearance
+
+In the settings, you can switch between 4 themes:
+
+1. Dark mode (Default)
+![The editor in dark mode](assets/darkmode.png)
+2. Light mode
+![The editor in light mode](assets/lightmode.png)
+3. High contrast mode
+![The editor in high contrast mode](assets/highcontrastmode.png)
+4. Black/White Mode
 
 ## Additional information
 
@@ -28,4 +82,8 @@ Written by Tobias Kisling
 
 Version 1.0
 
+This software is released under the MIT-License. For more information please see the ```license.md```!
+
 You can reach me by mail (<tobias.kisling@icloud.com>) or on github (<https://github.com/hasderhi>).
+
+# tk_dev - Software with passion!

@@ -51,7 +51,7 @@ The editor uses Python regular expressions to highlight HTML, CSS and JavaScript
 
 ### Auto Save
 
-If activated the editor will automatically save your changes every 10 seconds. You can change the interval in line 547:
+If activated the editor will automatically save your changes every 10 seconds until disabled by clicking the button again. You can change the interval in line 547:
 
 ```python
 def auto_save(self):
@@ -61,8 +61,6 @@ def auto_save(self):
             10000, self.auto_save # <-- Here
         )
 ```
-
-Note: Once activated, the function can only be disabled by restarting. This will be fixed in later updates.
 
 ### Appearance
 

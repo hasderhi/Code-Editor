@@ -22,7 +22,7 @@
 - Change: Added "Settings" option that will contain all settings in the future
 - Change: Added no-console python file (.pyw)
 
-### 1.0.4 (latest release)
+### 1.0.4
 
 - Change: Safe mode implemented (To view documents safely)
 - Change: Added "New document" option
@@ -32,5 +32,12 @@
 - Known Issue: When opening a new window with the "new" option, the program fails to load the icon for the "About" window. This is because of a faulty icon loader and will be fixed as soon as possible.
 
 - ToDo: Rework the readme
+
+### 1.0.5 (latest release)
+
+- Change: Fixed an issue with the auto save function
+- Change: Rewrote the readme
+
+- Known Issue: When opening a new window with the "new" option, the program fails to load the icon for the "About" window. This is because of a faulty icon loader and will be fixed as soon as possible.
 
 # tk_dev - Software with passion!

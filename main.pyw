@@ -78,6 +78,7 @@ class HTMLEditor:
         self.mode = "dark"  # Default
         self.unsaved_changes = False  # Track changes
         self.safe_mode = False  # Track if safe mode is enabled
+        self.auto_save_enabled = False  # Flag for auto-save status
         self.current_file_path = None  # Initialize current_file_path
         self.set_icon()  # Init icon function
 
@@ -227,7 +228,8 @@ class HTMLEditor:
         self.text_area.bind("<<Modified>>", self.on_text_change)  # Track changes
 
         self.update_syntax_highlighting()  # Init syntax highlighting
-
+        self.auto_save()
+        
     def set_icon(self):
         """Sets the application icon."""
         if pillow_imported:
@@ -568,12 +570,16 @@ class HTMLEditor:
             )  # Default title if no file is opened
 
     def auto_save(self):
-        """Saves the current document automatically at regular intervals"""
-        self.save_changes()
-        self.root.after(
-            10000, self.auto_save
-        )  # Save document every 10 seconds, edit this to change to your needs
+        """Saves the current document automatically at regular intervals if enabled."""
+        if self.auto_save_enabled:  # Check if auto-save is enabled
+            self.save_changes()  # Call the save_changes method to save the document
+        self.root.after(10000, self.auto_save)  # Schedule next auto-save
 
+    def toggle_auto_save(self):
+        """Toggles auto-save on and off."""
+        self.auto_save_enabled = not self.auto_save_enabled  # Toggle the flag
+        status = "enabled" if self.auto_save_enabled else "disabled"
+        messagebox.showinfo("Auto Save", f"Auto save is now {status}.")
     #####################################
     # Open file in browser
     #####################################
@@ -817,14 +823,7 @@ class HTMLEditor:
 
         button_frame3 = Frame(scrollable_frame, width=200, height=20, bg="#333333")
         button_frame3.pack(pady=10)
-        self.autoSaveEnableButton = Button(
-            button_frame3,
-            text="Enable autosave",
-            bg="#0099cc",
-            fg="#f0f0f0",
-            command=self.auto_save,
-        )
-        self.autoSaveEnableButton.pack(side=LEFT, padx=5)
+        Button(scrollable_frame, text="Toggle Auto Save", bg="#0099cc", fg="#f0f0f0", command=self.toggle_auto_save).pack(pady=10)
 
         ttk.Separator(scrollable_frame, orient="horizontal").pack(
             fill="x", padx=10, pady=10

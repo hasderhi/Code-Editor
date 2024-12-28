@@ -229,7 +229,7 @@ class HTMLEditor:
 
         self.update_syntax_highlighting()  # Init syntax highlighting
         self.auto_save()
-        
+
     def set_icon(self):
         """Sets the application icon."""
         if pillow_imported:
@@ -245,7 +245,7 @@ class HTMLEditor:
     #####################################
 
     def update_syntax_highlighting(self):
-        "Highlights HTML, CSS and JS keywords and tags in the code."
+        "Highlights HTML, CSS, JS, and Markdown syntax in the code."
         # Clear previous tags
         self.text_area.tag_remove("html_tag", "1.0", END)
         self.text_area.tag_remove("css_class", "1.0", END)
@@ -258,200 +258,244 @@ class HTMLEditor:
         self.text_area.tag_remove("js_comment", "1.0", END)
         self.text_area.tag_remove("integer", "1.0", END)
         self.text_area.tag_remove("px_value", "1.0", END)
+        self.text_area.tag_remove("markdown_header", "1.0", END)
+        self.text_area.tag_remove("markdown_bold", "1.0", END)
+        self.text_area.tag_remove("markdown_italic", "1.0", END)
+        self.text_area.tag_remove("markdown_link", "1.0", END)
+        self.text_area.tag_remove("markdown_list", "1.0", END)
 
         # Get content of text
         content = self.text_area.get("1.0", END)
 
-        # regex patterns for HTML tags, CSS styles, JavaScript code, string literals, and HTML comments
-        html_tag_pattern = r"</?[\w\s=\"\'\-\/]*[^<>]*\/?>"
-        html_comment_pattern = r"<!--.*?-->"  # Matches HTML comments
+        # Determine if the current file is markdown
+        is_markdown = self.current_file_path and self.current_file_path.endswith('.md')
 
-        # CSS patterns
-        css_class_pattern = r"\.[\w-]+"  # Matches CSS classes
-        css_property_pattern = r"[\w-]+(?=\s*:)"  # Matches CSS properties
+        if is_markdown:
+            # Markdown patterns
+            header_pattern = r'(^|\n)(#{1,6})\s*(.*)'  # Matches headers (e.g., # Header)
+            bold_pattern = r'\*\*(.*?)\*\*'  # Matches bold text (e.g., **bold**)
+            italic_pattern = r'\*(.*?)\*'  # Matches italic text (e.g., *italic*)
+            link_pattern = r'\[(.*?)\]\((.*?)\)'  # Matches links (e.g., [text](url))
+            list_pattern = r'^\s*[-*]\s+(.*)'  # Matches list items (e.g., - item)
 
-        # JavaScript patterns
-        javascript_function_pattern = r"\b\w+(?=\s*\()"
-        javascript_variable_pattern = r"\b(var|let|const)\s+(\w+)"
-        javascript_keyword_pattern = r"(?<![a-zA-Z0-9_])\b(var|let|const|function|if|else|for|while|return|switch|case|break|continue|try|catch|finally|async|await|import|export|class|extends|super|this|new|delete|instanceof|typeof|void|with|do|in|of|default|static|get|set|yield|throw|true|false|null|undefined)\b(?![a-zA-Z0-9_])"
+            # Highlight markdown headers
+            for match in re.finditer(header_pattern, content):
+                self.text_area.tag_add("markdown_header", f"1.0 + {match.start(3)} chars", f"1.0 + {match.end(3)} chars")
 
-        # String literal pattern
-        string_literal_pattern = (
-            r'(["\'])(?:(?=(\\?))\2.)*?\1'  # Matches strings in double or single quotes
-        )
+            # Highlight bold text
+            for match in re.finditer(bold_pattern, content):
+                self.text_area.tag_add("markdown_bold", f"1.0 + {match.start(1)} chars", f"1.0 + {match.end(1)} chars")
 
-        # Integer pattern (not in a string and not in an HTML tag)
-        integer_pattern = r'(?<![<"\'])\b\d+\b(?![>\'"])'  # Matches integers
+            # Highlight italic text
+            for match in re.finditer(italic_pattern, content):
+                self.text_area.tag_add("markdown_italic", f"1.0 + {match.start(1)} chars", f"1.0 + {match.end(1)} chars")
 
-        # px value pattern (not in a string and not in an HTML tag)
-        px_value_pattern = (
-            r'(?<![<"\'])\b\d+px\b(?![>\'"])'  # Matches numerals followed by 'px'
-        )
+            # Highlight links
+            for match in re.finditer(link_pattern, content):
+                self.text_area.tag_add("markdown_link", f"1.0 + {match.start(1)} chars", f"1.0 + {match.end(2)} chars")
 
-        # HTML tags
-        for match in re.finditer(html_tag_pattern, content):
-            self.text_area.tag_add(
-                "html_tag", f"1.0 + {match.start()} chars", f"1.0 + {match.end()} chars"
+            # Highlight list items
+            for match in re.finditer(list_pattern, content):
+                self.text_area.tag_add("markdown_list", f"1.0 + {match.start(1)} chars", f"1.0 + {match.end(1)} chars")
+
+            # Configure markdown tag colors
+            self.text_area.tag_config("markdown_header", foreground="#ffcc00")  # Yellow for headers
+            self.text_area.tag_config("markdown_bold", foreground="#ff00ff")  # Pink for bold
+            self.text_area.tag_config("markdown_italic", foreground="#00ffaa")  # Light green for italic
+            self.text_area.tag_config("markdown_link", foreground="#00ff00")  # Green for links
+            self.text_area.tag_config("markdown_list", foreground="#339933")  # Dark green for lists
+
+        else:
+            # Existing regex patterns for HTML, CSS, and JavaScript
+            html_tag_pattern = r"</?[\w\s=\"\'\-\/]*[^<>]*\/?>"
+            html_comment_pattern = r"<!--.*?-->"  # Matches HTML comments
+
+            # CSS patterns
+            css_class_pattern = r"\.[\w-]+"  # Matches CSS classes
+            css_property_pattern = r"[\w-]+(?=\s*:)"  # Matches CSS properties
+
+            # JavaScript patterns
+            javascript_function_pattern = r"\b\w+(?=\s*\()"
+            javascript_variable_pattern = r"\b(var|let|const)\s+(\w+)"
+            javascript_keyword_pattern = r"(?<![a-zA-Z0-9_])\b(var|let|const|function|if|else|for|while|return|switch|case|break|continue|try|catch|finally|async|await|import|export|class|extends|super|this|new|delete|instanceof|typeof|void|with|do|in|of|default|static|get|set|yield|throw|true|false|null|undefined)\b(?![a-zA-Z0-9_])"
+
+            # String literal pattern
+            string_literal_pattern = (
+                r'(["\'])(?:(?=(\\?))\2.)*?\1'  # Matches strings in double or single quotes
             )
 
-        # HTML comments
-        for match in re.finditer(html_comment_pattern, content):
-            self.text_area.tag_add(
-                "html_comment",
-                f"1.0 + {match.start()} chars",
-                f"1.0 + {match.end()} chars",
+            # Integer pattern (not in a string and not in an HTML tag)
+            integer_pattern = r'(?<![<"\'])\b\d+\b(?![>\'"])'  # Matches integers
+
+            # px value pattern (not in a string and not in an HTML tag)
+            px_value_pattern = (
+                r'(?<![<"\'])\b\d+px\b(?![>\'"])'  # Matches numerals followed by 'px'
             )
 
-        # JavaScript comments
-        for match in re.finditer(r"//.*?$", content, re.MULTILINE):
-            start_index = match.start()
-            if (
-                not content[max(0, start_index - 7) : start_index]
-                .strip()
-                .endswith(("http:", "https:"))
-            ):
+            # HTML tags
+            for match in re.finditer(html_tag_pattern, content):
                 self.text_area.tag_add(
-                    "js_comment",
+                    "html_tag", f"1.0 + {match.start()} chars", f"1.0 + {match.end()} chars"
+                )
+
+            # HTML comments
+            for match in re.finditer(html_comment_pattern, content):
+                self.text_area.tag_add(
+                    "html_comment",
                     f"1.0 + {match.start()} chars",
                     f"1.0 + {match.end()} chars",
                 )
 
-        # CSS classes
-        for match in re.finditer(css_class_pattern, content):
-            self.text_area.tag_add(
-                "css_class",
-                f"1.0 + {match.start()} chars",
-                f"1.0 + {match.end()} chars",
-            )
+            # JavaScript comments
+            for match in re.finditer(r"//.*?$", content, re.MULTILINE):
+                start_index = match.start()
+                if (
+                    not content[max(0, start_index - 7) : start_index]
+                    .strip()
+                    .endswith(("http:", "https:"))
+                ):
+                    self.text_area.tag_add(
+                        "js_comment",
+                        f"1.0 + {match.start()} chars",
+                        f"1.0 + {match.end()} chars",
+                    )
 
-        # CSS properties
-        for match in re.finditer(css_property_pattern, content):
-            self.text_area.tag_add(
-                "css_property",
-                f"1.0 + {match.start()} chars",
-                f"1.0 + {match.end()} chars",
-            )
+            # CSS classes
+            for match in re.finditer(css_class_pattern, content):
+                self.text_area.tag_add(
+                    "css_class",
+                    f"1.0 + {match.start()} chars",
+                    f"1.0 + {match.end()} chars",
+                )
 
-        # JavaScript functions
-        for match in re.finditer(javascript_function_pattern, content):
-            self.text_area.tag_add(
-                "javascript_function",
-                f"1.0 + {match.start()} chars",
-                f"1.0 + {match.end()} chars",
-            )
+            # CSS properties
+            for match in re.finditer(css_property_pattern, content):
+                self.text_area.tag_add(
+                    "css_property",
+                    f"1.0 + {match.start()} chars",
+                    f"1.0 + {match.end()} chars",
+                )
 
-        # JavaScript variables
-        for match in re.finditer(javascript_variable_pattern, content):
-            self.text_area.tag_add(
-                "javascript_variable",
-                f"1.0 + {match.start(2)} chars",
-                f"1.0 + {match.end(2)} chars",
-            )
+            # JavaScript functions
+            for match in re.finditer(javascript_function_pattern, content):
+                self.text_area.tag_add(
+                    "javascript_function",
+                    f"1.0 + {match.start()} chars",
+                    f"1.0 + {match.end()} chars",
+                )
 
-        # JavaScript keywords
-        for match in re.finditer(javascript_keyword_pattern, content):
-            self.text_area.tag_add(
-                "javascript_keyword",
-                f"1.0 + {match.start()} chars",
-                f"1.0 + {match.end()} chars",
-            )
+            # JavaScript variables
+            for match in re.finditer(javascript_variable_pattern, content):
+                self.text_area.tag_add(
+                    "javascript_variable",
+                    f"1.0 + {match.start(2)} chars",
+                    f"1.0 + {match.end(2)} chars",
+                )
 
-        # String literals
-        for match in re.finditer(string_literal_pattern, content):
-            self.text_area.tag_add(
-                "string_literal",
-                f"1.0 + {match.start()} chars",
-                f"1.0 + {match.end()} chars",
-            )
+            # JavaScript keywords
+            for match in re.finditer(javascript_keyword_pattern, content):
+                self.text_area.tag_add(
+                    "javascript_keyword",
+                    f"1.0 + {match.start()} chars",
+                    f"1.0 + {match.end()} chars",
+                )
 
-        # Integers
-        for match in re.finditer(integer_pattern, content):
-            self.text_area.tag_add(
-                "integer",
-                f"1.0 + {match.start()} chars",
-                f"1.0 + {match.end()} chars",
-            )
+            # String literals
+            for match in re.finditer(string_literal_pattern, content):
+                self.text_area.tag_add(
+                    "string_literal",
+                    f"1.0 + {match.start()} chars",
+                    f"1.0 + {match.end()} chars",
+                )
 
-        # px values
-        for match in re.finditer(px_value_pattern, content):
-            self.text_area.tag_add(
-                "px_value",
-                f"1.0 + {match.start()} chars",
-                f"1.0 + {match.end()} chars",
-            )
+            # Integers
+            for match in re.finditer(integer_pattern, content):
+                self.text_area.tag_add(
+                    "integer",
+                    f"1.0 + {match.start()} chars",
+                    f"1.0 + {match.end()} chars",
+                )
 
-        # Configure tag colors (Edit this to change colors to your needs)
-        if self.mode == "dark":
-            self.text_area.tag_config("html_tag", foreground="#66e0ff")  # Light blue
-            self.text_area.tag_config(
-                "html_comment", foreground="#009900"
-            )  # Dark green
-            self.text_area.tag_config("js_comment", foreground="#009900")  # Dark green
-            self.text_area.tag_config("css_class", foreground="#ff00ff")  # Pink
-            self.text_area.tag_config(
-                "css_property", foreground="#00ffaa"
-            )  # Light green
-            self.text_area.tag_config(
-                "javascript_function", foreground="#ffcc00"
-            )  # Yellow orange
-            self.text_area.tag_config(
-                "javascript_variable", foreground="#00ff00"
-            )  # Lime
-            self.text_area.tag_config("javascript_keyword", foreground="#ff0066")  # Red
-            self.text_area.tag_config("string_literal", foreground="#ff9933")  # Orange
-            self.text_area.tag_config("integer", foreground="#ffcc00")  # Yellow orange
-            self.text_area.tag_config("px_value", foreground="#ffcc00")  # Yellow orange
+            # px values
+            for match in re.finditer(px_value_pattern, content):
+                self.text_area.tag_add(
+                    "px_value",
+                    f"1.0 + {match.start()} chars",
+                    f"1.0 + {match.end()} chars",
+                )
 
-        if self.mode == "light":
-            self.text_area.tag_config("html_tag", foreground="#003399")  # Dark blue
-            self.text_area.tag_config("html_comment", foreground="#008000")  # Green
-            self.text_area.tag_config("js_comment", foreground="#008000")  # Green
-            self.text_area.tag_config("css_class", foreground="#800080")  # Purple
-            self.text_area.tag_config("css_property", foreground="#003399")  # Dark blue
-            self.text_area.tag_config(
-                "javascript_function", foreground="#ff8c00"
-            )  # Dark orange
-            self.text_area.tag_config(
-                "javascript_variable", foreground="#0000ff"
-            )  # Blue
-            self.text_area.tag_config("javascript_keyword", foreground="#ff0000")  # Red
-            self.text_area.tag_config("string_literal", foreground="#cc6600")  # Brown
-            self.text_area.tag_config("integer", foreground="#0000ff")  # Blue
-            self.text_area.tag_config("px_value", foreground="#0000ff")  # Blue
+            # Configure tag colors (Edit this to change colors to your needs)
+            if self.mode == "dark":
+                self.text_area.tag_config("html_tag", foreground="#66e0ff")  # Light blue
+                self.text_area.tag_config(
+                    "html_comment", foreground="#009900"
+                )  # Dark green
+                self.text_area.tag_config("js_comment", foreground="#009900")  # Dark green
+                self.text_area.tag_config("css_class", foreground="#ff00ff")  # Pink
+                self.text_area.tag_config(
+                    "css_property", foreground="#00ffaa"
+                )  # Light green
+                self.text_area.tag_config(
+                    "javascript_function", foreground="#ffcc00"
+                )  # Yellow orange
+                self.text_area.tag_config(
+                    "javascript_variable", foreground="#00ff00"
+                )  # Lime
+                self.text_area.tag_config("javascript_keyword", foreground="#ff0066")  # Red
+                self.text_area.tag_config("string_literal", foreground="#ff9933")  # Orange
+                self.text_area.tag_config("integer", foreground="#ffcc00")  # Yellow orange
+                self.text_area.tag_config("px_value", foreground="#ffcc00")  # Yellow orange
 
-        if self.mode == "high_contrast":
-            self.text_area.tag_config("html_tag", foreground="#66e0ff")  # Light
-            self.text_area.tag_config(
-                "html_comment", foreground="#009900"
-            )  # Dark green
-            self.text_area.tag_config("js_comment", foreground="#009900")  # Dark green
-            self.text_area.tag_config("css_class", foreground="#ff3399")  # Pink
-            self.text_area.tag_config(
-                "css_property", foreground="#00ffaa"
-            )  # Light green
-            self.text_area.tag_config(
-                "javascript_function", foreground="#ffcc00"
-            )  # Yellow orange
-            self.text_area.tag_config(
-                "javascript_variable", foreground="#00ff00"
-            )  # Lime
-            self.text_area.tag_config("javascript_keyword", foreground="#ff0066")  # Red
-            self.text_area.tag_config("string_literal", foreground="#ff9933")  # Orange
-            self.text_area.tag_config("integer", foreground="#ffcc00")  # Yellow orange
-            self.text_area.tag_config("px_value", foreground="#ffcc00")  # Yellow orange
+            if self.mode == "light":
+                self.text_area.tag_config("html_tag", foreground="#003399")  # Dark blue
+                self.text_area.tag_config("html_comment", foreground="#008000")  # Green
+                self.text_area.tag_config("js_comment", foreground="#008000")  # Green
+                self.text_area.tag_config("css_class", foreground="#800080")  # Purple
+                self.text_area.tag_config("css_property", foreground="#003399")  # Dark blue
+                self.text_area.tag_config(
+                    "javascript_function", foreground="#ff8c00"
+                )  # Dark orange
+                self.text_area.tag_config(
+                    "javascript_variable", foreground="#0000ff"
+                )  # Blue
+                self.text_area.tag_config("javascript_keyword", foreground="#ff0000")  # Red
+                self.text_area.tag_config("string_literal", foreground="#cc6600")  # Brown
+                self.text_area.tag_config("integer", foreground="#0000ff")  # Blue
+                self.text_area.tag_config("px_value", foreground="#0000ff")  # Blue
 
-        if self.mode == "black_white":
-            self.text_area.tag_config("html_tag", foreground="#666666")
-            self.text_area.tag_config("html_comment", foreground="#000000")
-            self.text_area.tag_config("js_comment", foreground="#000000")
-            self.text_area.tag_config("css_class", foreground="#666666")
-            self.text_area.tag_config("css_property", foreground="#666666")
-            self.text_area.tag_config("javascript_function", foreground="#666666")
-            self.text_area.tag_config("javascript_variable", foreground="#666666")
-            self.text_area.tag_config("javascript_keyword", foreground="#666666")
-            self.text_area.tag_config("string_literal", foreground="#000000")
-            self.text_area.tag_config("integer", foreground="#000000")
-            self.text_area.tag_config("px_value", foreground="#000000")
+            if self.mode == "high_contrast":
+                self.text_area.tag_config("html_tag", foreground="#66e0ff")  # Light
+                self.text_area.tag_config(
+                    "html_comment", foreground="#009900"
+                )  # Dark green
+                self.text_area.tag_config("js_comment", foreground="#009900")  # Dark green
+                self.text_area.tag_config("css_class", foreground="#ff3399")  # Pink
+                self.text_area.tag_config(
+                    "css_property", foreground="#00ffaa"
+                )  # Light green
+                self.text_area.tag_config(
+                    "javascript_function", foreground="#ffcc00"
+                )  # Yellow orange
+                self.text_area.tag_config(
+                    "javascript_variable", foreground="#00ff00"
+                )  # Lime
+                self.text_area.tag_config("javascript_keyword", foreground="#ff0066")  # Red
+                self.text_area.tag_config("string_literal", foreground="#ff9933")  # Orange
+                self.text_area.tag_config("integer", foreground="#ffcc00")  # Yellow orange
+                self.text_area.tag_config("px_value", foreground="#ffcc00")  # Yellow orange
+
+            if self.mode == "black_white":
+                self.text_area.tag_config("html_tag", foreground="#666666")
+                self.text_area.tag_config("html_comment", foreground="#000000")
+                self.text_area.tag_config("js_comment", foreground="#000000")
+                self.text_area.tag_config("css_class", foreground="#666666")
+                self.text_area.tag_config("css_property", foreground="#666666")
+                self.text_area.tag_config("javascript_function", foreground="#666666")
+                self.text_area.tag_config("javascript_variable", foreground="#666666")
+                self.text_area.tag_config("javascript_keyword", foreground="#666666")
+                self.text_area.tag_config("string_literal", foreground="#000000")
+                self.text_area.tag_config("integer", foreground="#000000")
+                self.text_area.tag_config("px_value", foreground="#000000")
 
         # Schedule next update
         self.root.after(100, self.update_syntax_highlighting)

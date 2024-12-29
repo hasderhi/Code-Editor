@@ -38,6 +38,7 @@ except Exception as e:
 
 try:
     from PIL import Image, ImageTk  # Try to import Pillow modules
+
     pillow_imported = True
 except ImportError:
     pillow_imported = False
@@ -54,9 +55,8 @@ if win:  # If win flag true, set up id
 #####################################
 # Main class
 #####################################
-
-
 class HTMLEditor:
+
 
     #####################################
     # Init tkinter, set up main window
@@ -75,17 +75,18 @@ class HTMLEditor:
         self.root.geometry("800x600")
         self.root.config(bg="#2B2B2B")
         self.root.resizable(True, True)
-        self.mode = "dark"  # Default
-        self.unsaved_changes = False  # Track changes
-        self.safe_mode = False  # Track if safe mode is enabled
-        self.auto_save_enabled = False  # Flag for auto-save status
-        self.current_file_path = None  # Initialize current_file_path
-        self.set_icon()  # Init icon function
+
+        self.mode = "dark"                          # Default
+        self.unsaved_changes = False                # Track changes
+        self.safe_mode = False                      # Track if safe mode is enabled
+        self.auto_save_enabled = False              # Flag for auto-save status
+        self.current_file_path = None               # Initialize current_file_path
+        self.set_icon()                             # Init icon function
+
 
         #####################################
         # Bind keys on functions
         #####################################
-
         self.root.bind(
             "<Control-s>", lambda event: self.save_changes()
         )  # CTRL_S         >   Save
@@ -114,10 +115,10 @@ class HTMLEditor:
             "<Control-f>", lambda event: self.find_replace()
         )  # CTRL_F         >   Find and Replace
 
+
         #####################################
         # Init widgets, set up text area
         #####################################
-
         self.menu_area = Frame(self.root, width=100, height=50, bg="#4d4d4d")
         self.menu_area.pack(side=TOP)
 
@@ -131,6 +132,7 @@ class HTMLEditor:
             command=self.info_window,
         )
         self.infoButton.pack(side=LEFT)
+
         self.newButton = Button(
             self.menu_area,
             width=10,
@@ -141,6 +143,7 @@ class HTMLEditor:
             command=self.new_document,
         )
         self.newButton.pack(side=LEFT)
+
         self.saveAsButton = Button(
             self.menu_area,
             width=10,
@@ -151,6 +154,7 @@ class HTMLEditor:
             command=self.save_document,
         )
         self.saveAsButton.pack(side=LEFT)
+
         self.saveButton = Button(
             self.menu_area,
             width=10,
@@ -161,6 +165,7 @@ class HTMLEditor:
             command=self.save_changes,
         )
         self.saveButton.pack(side=LEFT)
+
         self.openButton = Button(
             self.menu_area,
             width=10,
@@ -171,6 +176,7 @@ class HTMLEditor:
             command=self.open_document,
         )
         self.openButton.pack(side=LEFT)
+
         self.runButton = Button(
             self.menu_area,
             width=10,
@@ -180,6 +186,7 @@ class HTMLEditor:
             command=self.open_document_in_browser,
         )
         self.runButton.pack(side=LEFT)
+
         self.viewButton = Button(
             self.menu_area,
             width=10,
@@ -189,6 +196,7 @@ class HTMLEditor:
             command=self.change_zoom,
         )
         self.viewButton.pack(side=LEFT)
+
         self.frButton = Button(
             self.menu_area,
             width=10,
@@ -198,6 +206,7 @@ class HTMLEditor:
             command=self.find_replace,
         )
         self.frButton.pack(side=LEFT)
+
         self.settingsbutton = Button(
             self.menu_area,
             width=10,
@@ -222,13 +231,14 @@ class HTMLEditor:
             wrap=WORD,
         )
         self.text_area.pack(fill=BOTH, expand=True)
+
         font = tkfont.Font(font=self.text_area["font"])
         tab_size = font.measure("       ")  # Edit this to change tab size to your needs
         self.text_area.config(tabs=tab_size)
         self.text_area.bind("<<Modified>>", self.on_text_change)  # Track changes
 
         self.update_syntax_highlighting()  # Init syntax highlighting
-        self.auto_save()
+        self.auto_save() # Init auto save (Not active until toggled)
 
     def set_icon(self):
         """Sets the application icon."""
@@ -243,7 +253,6 @@ class HTMLEditor:
     #####################################
     # Highlight syntax
     #####################################
-
     def update_syntax_highlighting(self):
         "Highlights HTML, CSS, JS, and Markdown syntax in the code."
         # Clear previous tags
@@ -268,74 +277,116 @@ class HTMLEditor:
         content = self.text_area.get("1.0", END)
 
         # Determine if the current file is markdown
-        is_markdown = self.current_file_path and self.current_file_path.endswith('.md')
+        is_markdown = self.current_file_path and self.current_file_path.endswith(".md")
 
         if is_markdown:
             # Markdown patterns
-            header_pattern = r'(^|\n)(#{1,6})\s*(.*)'  # Matches headers (e.g., # Header)
-            bold_pattern = r'\*\*(.*?)\*\*'  # Matches bold text (e.g., **bold**)
-            italic_pattern = r'\*(.*?)\*'  # Matches italic text (e.g., *italic*)
-            link_pattern = r'\[(.*?)\]\((.*?)\)'  # Matches links (e.g., [text](url))
-            list_pattern = r'^\s*[-*]\s+(.*)'  # Matches list items (e.g., - item)
+            header_pattern = (r"(^|\n)(#{1,6})\s*(.*)")     # Matches headers (e.g., # Header)
+            bold_pattern = r"\*\*(.*?)\*\*"                 # Matches bold text (e.g., **bold**)
+            italic_pattern = r"\*(.*?)\*"                   # Matches italic text (e.g., *italic*)
+            link_pattern = r"\[(.*?)\]\((.*?)\)"            # Matches links (e.g., [text](url))
+            list_pattern = r"^\s*[-*]\s+(.*)"               # Matches list items (e.g., - item)
 
             # Highlight markdown headers
             for match in re.finditer(header_pattern, content):
-                self.text_area.tag_add("markdown_header", f"1.0 + {match.start(3)} chars", f"1.0 + {match.end(3)} chars")
+                self.text_area.tag_add(
+                    "markdown_header",
+                    f"1.0 + {match.start(3)} chars",
+                    f"1.0 + {match.end(3)} chars",
+                )
 
             # Highlight bold text
             for match in re.finditer(bold_pattern, content):
-                self.text_area.tag_add("markdown_bold", f"1.0 + {match.start(1)} chars", f"1.0 + {match.end(1)} chars")
+                self.text_area.tag_add(
+                    "markdown_bold",
+                    f"1.0 + {match.start(1)} chars",
+                    f"1.0 + {match.end(1)} chars",
+                )
 
             # Highlight italic text
             for match in re.finditer(italic_pattern, content):
-                self.text_area.tag_add("markdown_italic", f"1.0 + {match.start(1)} chars", f"1.0 + {match.end(1)} chars")
+                self.text_area.tag_add(
+                    "markdown_italic",
+                    f"1.0 + {match.start(1)} chars",
+                    f"1.0 + {match.end(1)} chars",
+                )
 
             # Highlight links
             for match in re.finditer(link_pattern, content):
-                self.text_area.tag_add("markdown_link", f"1.0 + {match.start(1)} chars", f"1.0 + {match.end(2)} chars")
+                self.text_area.tag_add(
+                    "markdown_link",
+                    f"1.0 + {match.start(1)} chars",
+                    f"1.0 + {match.end(2)} chars",
+                )
 
             # Highlight list items
             for match in re.finditer(list_pattern, content):
-                self.text_area.tag_add("markdown_list", f"1.0 + {match.start(1)} chars", f"1.0 + {match.end(1)} chars")
+                self.text_area.tag_add(
+                    "markdown_list",
+                    f"1.0 + {match.start(1)} chars",
+                    f"1.0 + {match.end(1)} chars",
+                )
 
-            # Configure markdown tag colors
-            self.text_area.tag_config("markdown_header", foreground="#ffcc00")  # Yellow for headers
-            self.text_area.tag_config("markdown_bold", foreground="#ff00ff")  # Pink for bold
-            self.text_area.tag_config("markdown_italic", foreground="#00ffaa")  # Light green for italic
-            self.text_area.tag_config("markdown_link", foreground="#00ff00")  # Green for links
-            self.text_area.tag_config("markdown_list", foreground="#339933")  # Dark green for lists
+            # Configure markdown tag colors (Edit this to change colors to your needs)
+            if self.mode == "dark":
+                self.text_area.tag_config("markdown_header", foreground="#ffcc00")  # Yellow for headers
+                self.text_area.tag_config("markdown_bold", foreground="#ff00ff")  # Pink for bold
+                self.text_area.tag_config("markdown_italic", foreground="#00ffaa")  # Light green for italic
+                self.text_area.tag_config("markdown_link", foreground="#00ff00")  # Green for links
+                self.text_area.tag_config("markdown_list", foreground="#339933")  # Dark green for lists
+
+            if self.mode == "high_contrast":
+                self.text_area.tag_config("markdown_header", foreground="#ffcc00")  # Yellow for headers
+                self.text_area.tag_config("markdown_bold", foreground="#ff00ff")  # Pink for bold
+                self.text_area.tag_config("markdown_italic", foreground="#00ffaa")  # Light green for italic
+                self.text_area.tag_config("markdown_link", foreground="#00ff00")  # Green for links
+                self.text_area.tag_config("markdown_list", foreground="#339933")  # Dark green for lists
+
+            if self.mode == "black_white":
+                self.text_area.tag_config("markdown_header", foreground="#737373")
+                self.text_area.tag_config("markdown_bold", foreground="#737373")
+                self.text_area.tag_config("markdown_italic", foreground="#737373")
+                self.text_area.tag_config("markdown_link", foreground="#737373")
+                self.text_area.tag_config("markdown_list", foreground="#737373")
+
+            elif self.mode == "light":
+                self.text_area.tag_config("markdown_header", foreground="#ff6600")  # Orange for headers
+                self.text_area.tag_config("markdown_bold", foreground="#ff00ff")  # Pink for bold
+                self.text_area.tag_config("markdown_italic", foreground="#006666")  # Cyan for italic
+                self.text_area.tag_config("markdown_link", foreground="#e60073")  # Pink for links
+                self.text_area.tag_config("markdown_list", foreground="#339933")  # Dark green for lists
 
         else:
-            # Existing regex patterns for HTML, CSS, and JavaScript
-            html_tag_pattern = r"</?[\w\s=\"\'\-\/]*[^<>]*\/?>"
-            html_comment_pattern = r"<!--.*?-->"  # Matches HTML comments
+            # Regex patterns for HTML, CSS, and JavaScript
+
+            # HTML patterns
+            html_tag_pattern = r"</?[\w\s=\"\'\-\/]*[^<>]*\/?>"         # Matches HTML tags
+            html_comment_pattern = r"<!--.*?-->"                        # Matches HTML comments
 
             # CSS patterns
-            css_class_pattern = r"\.[\w-]+"  # Matches CSS classes
-            css_property_pattern = r"[\w-]+(?=\s*:)"  # Matches CSS properties
+            css_class_pattern = r"\.[\w-]+"                             # Matches CSS classes
+            css_property_pattern = r"[\w-]+(?=\s*:)"                    # Matches CSS properties
 
             # JavaScript patterns
-            javascript_function_pattern = r"\b\w+(?=\s*\()"
-            javascript_variable_pattern = r"\b(var|let|const)\s+(\w+)"
-            javascript_keyword_pattern = r"(?<![a-zA-Z0-9_])\b(var|let|const|function|if|else|for|while|return|switch|case|break|continue|try|catch|finally|async|await|import|export|class|extends|super|this|new|delete|instanceof|typeof|void|with|do|in|of|default|static|get|set|yield|throw|true|false|null|undefined)\b(?![a-zA-Z0-9_])"
+            javascript_function_pattern = r"\b\w+(?=\s*\()"             # Matches functions
+            javascript_variable_pattern = r"\b(var|let|const)\s+(\w+)"  # Matches variables
+            javascript_keyword_pattern = r"(?<![a-zA-Z0-9_])\b(var|let|const|function|if|else|for|while|return|switch|case|break|continue|try|catch|finally|async|await|import|export|class|extends|super|this|new|delete|instanceof|typeof|void|with|do|in|of|default|static|get|set|yield|throw|true|false|null|undefined)\b(?![a-zA-Z0-9_])" #Matches keywords
 
             # String literal pattern
-            string_literal_pattern = (
-                r'(["\'])(?:(?=(\\?))\2.)*?\1'  # Matches strings in double or single quotes
-            )
+            string_literal_pattern = r'(["\'])(?:(?=(\\?))\2.)*?\1'  # Matches strings in double or single quotes
 
             # Integer pattern (not in a string and not in an HTML tag)
             integer_pattern = r'(?<![<"\'])\b\d+\b(?![>\'"])'  # Matches integers
 
             # px value pattern (not in a string and not in an HTML tag)
-            px_value_pattern = (
-                r'(?<![<"\'])\b\d+px\b(?![>\'"])'  # Matches numerals followed by 'px'
-            )
+            px_value_pattern = (r'(?<![<"\'])\b\d+px\b(?![>\'"])')  # Matches numerals followed by 'px'
 
             # HTML tags
             for match in re.finditer(html_tag_pattern, content):
                 self.text_area.tag_add(
-                    "html_tag", f"1.0 + {match.start()} chars", f"1.0 + {match.end()} chars"
+                    "html_tag",
+                    f"1.0 + {match.start()} chars",
+                    f"1.0 + {match.end()} chars",
                 )
 
             # HTML comments
@@ -424,23 +475,16 @@ class HTMLEditor:
                     f"1.0 + {match.end()} chars",
                 )
 
+
             # Configure tag colors (Edit this to change colors to your needs)
             if self.mode == "dark":
                 self.text_area.tag_config("html_tag", foreground="#66e0ff")  # Light blue
-                self.text_area.tag_config(
-                    "html_comment", foreground="#009900"
-                )  # Dark green
+                self.text_area.tag_config("html_comment", foreground="#009900")  # Dark green
                 self.text_area.tag_config("js_comment", foreground="#009900")  # Dark green
                 self.text_area.tag_config("css_class", foreground="#ff00ff")  # Pink
-                self.text_area.tag_config(
-                    "css_property", foreground="#00ffaa"
-                )  # Light green
-                self.text_area.tag_config(
-                    "javascript_function", foreground="#ffcc00"
-                )  # Yellow orange
-                self.text_area.tag_config(
-                    "javascript_variable", foreground="#00ff00"
-                )  # Lime
+                self.text_area.tag_config("css_property", foreground="#00ffaa")  # Light green
+                self.text_area.tag_config("javascript_function", foreground="#ffcc00")  # Yellow orange
+                self.text_area.tag_config("javascript_variable", foreground="#00ff00")  # Lime
                 self.text_area.tag_config("javascript_keyword", foreground="#ff0066")  # Red
                 self.text_area.tag_config("string_literal", foreground="#ff9933")  # Orange
                 self.text_area.tag_config("integer", foreground="#ffcc00")  # Yellow orange
@@ -452,12 +496,8 @@ class HTMLEditor:
                 self.text_area.tag_config("js_comment", foreground="#008000")  # Green
                 self.text_area.tag_config("css_class", foreground="#800080")  # Purple
                 self.text_area.tag_config("css_property", foreground="#003399")  # Dark blue
-                self.text_area.tag_config(
-                    "javascript_function", foreground="#ff8c00"
-                )  # Dark orange
-                self.text_area.tag_config(
-                    "javascript_variable", foreground="#0000ff"
-                )  # Blue
+                self.text_area.tag_config("javascript_function", foreground="#ff8c00")  # Dark orange
+                self.text_area.tag_config("javascript_variable", foreground="#0000ff")  # Blue
                 self.text_area.tag_config("javascript_keyword", foreground="#ff0000")  # Red
                 self.text_area.tag_config("string_literal", foreground="#cc6600")  # Brown
                 self.text_area.tag_config("integer", foreground="#0000ff")  # Blue
@@ -465,20 +505,12 @@ class HTMLEditor:
 
             if self.mode == "high_contrast":
                 self.text_area.tag_config("html_tag", foreground="#66e0ff")  # Light
-                self.text_area.tag_config(
-                    "html_comment", foreground="#009900"
-                )  # Dark green
+                self.text_area.tag_config("html_comment", foreground="#009900")  # Dark green
                 self.text_area.tag_config("js_comment", foreground="#009900")  # Dark green
                 self.text_area.tag_config("css_class", foreground="#ff3399")  # Pink
-                self.text_area.tag_config(
-                    "css_property", foreground="#00ffaa"
-                )  # Light green
-                self.text_area.tag_config(
-                    "javascript_function", foreground="#ffcc00"
-                )  # Yellow orange
-                self.text_area.tag_config(
-                    "javascript_variable", foreground="#00ff00"
-                )  # Lime
+                self.text_area.tag_config("css_property", foreground="#00ffaa")  # Light green
+                self.text_area.tag_config("javascript_function", foreground="#ffcc00")  # Yellow orange
+                self.text_area.tag_config("javascript_variable", foreground="#00ff00")  # Lime
                 self.text_area.tag_config("javascript_keyword", foreground="#ff0066")  # Red
                 self.text_area.tag_config("string_literal", foreground="#ff9933")  # Orange
                 self.text_area.tag_config("integer", foreground="#ffcc00")  # Yellow orange
@@ -500,37 +532,31 @@ class HTMLEditor:
         # Schedule next update
         self.root.after(100, self.update_syntax_highlighting)
 
+
     #####################################
     # Save, open, autosave functions, title bar update
     #####################################
-
     def new_document(self):
         "Creates a new instance of HTMLEditor for a new window"
-        new_root = Tk()  # Create a new root window
-        new_editor = HTMLEditor(new_root)  # Initialize the HTMLEditor with the new root
-        new_editor.set_icon()  # Set the icon for the new window
-        new_root.mainloop()  # Start the main loop for the new window
+        new_root = Tk()
+        new_editor = HTMLEditor(new_root)
+        new_editor.set_icon()
+        new_root.mainloop()
 
     def toggle_safe_mode(self):
         """Toggles safe mode on and off."""
-        self.safe_mode = not self.safe_mode  # Toggle the safe mode flag
-        self.text_area.config(
-            state=DISABLED if self.safe_mode else NORMAL
-        )  # Enable/disable editing
+        self.safe_mode = not self.safe_mode                                     # Toggle the safe mode flag
+        self.text_area.config(state=DISABLED if self.safe_mode else NORMAL)     # Enable/disable editing
         if self.safe_mode:
-            messagebox.showinfo(
-                "Safe Mode", "Safe mode is now enabled. You cannot edit the document."
-            )
+            messagebox.showinfo("Safe Mode", "Safe mode is now enabled. You cannot edit the document.")
         else:
-            messagebox.showinfo(
-                "Safe Mode", "Safe mode is now disabled. You can edit the document."
-            )
+            messagebox.showinfo("Safe Mode", "Safe mode is now disabled. You can edit the document.")
 
     def on_text_change(self, event):
         """Gets called if the text area is modified. Calls update functions."""
         self.unsaved_changes = True
-        self.text_area.edit_modified(False)  # Reset the modified flag
-        self.update_title()  # Update the title to reflect unsaved changes
+        self.text_area.edit_modified(False)  # Reset modified flag
+        self.update_title()  # Update the title
 
     def save_document(self):
         """Saves the current document to a new filepath"""
@@ -541,6 +567,7 @@ class HTMLEditor:
                     ("HTML Sites", "*.html"),
                     ("Cascading Style Sheets", "*.css"),
                     ("JavaScript Scripts", "*.js"),
+                    ("Markdown Text Files", "*.md"),
                     ("Standard Text Files", "*.txt"),
                     ("All Files", "*.*"),
                 ],
@@ -562,8 +589,8 @@ class HTMLEditor:
         try:
             with open(self.current_file_path, "w") as file:
                 file.write(self.text_area.get("1.0", "end-1c"))
-                self.unsaved_changes = False  # Reset unsaved changes flag
-                self.update_title()  # Update title
+                self.unsaved_changes = False    # Reset unsaved changes flag
+                self.update_title()             # Update title
         except:
             self.save_document()
 
@@ -577,6 +604,7 @@ class HTMLEditor:
                     ("Cascading Style Sheets", "*.css"),
                     ("JavaScript Scripts", "*.js"),
                     ("Standard Text Files", "*.txt"),
+                    ("Markdown Text Files", "*.md"),
                     ("All Files", "*.*"),
                 ],
             )
@@ -589,9 +617,7 @@ class HTMLEditor:
                     self.current_file_path = file_path
                     self.unsaved_changes = False  # Reset unsaved changes flag
                     self.update_title()  # Update title
-                    self.text_area.config(
-                        state=DISABLED if self.safe_mode else NORMAL
-                    )  # Disable editing if in safe mode
+                    self.text_area.config(state=DISABLED if self.safe_mode else NORMAL)  # Disable editing if in safe mode
             else:
                 return
         except Exception as e:
@@ -601,17 +627,11 @@ class HTMLEditor:
         """Updates the title of the window based on the current file path and unsaved changes status"""
         if self.current_file_path:  # Check if current_file_path is set
             if self.unsaved_changes:
-                self.root.title(
-                    f"HTML Editor - {os.path.basename(self.current_file_path)}*"
-                )
+                self.root.title(f"HTML Editor - {os.path.basename(self.current_file_path)}*")
             else:
-                self.root.title(
-                    f"HTML Editor - {os.path.basename(self.current_file_path)}"
-                )
+                self.root.title(f"HTML Editor - {os.path.basename(self.current_file_path)}")
         else:
-            self.root.title(
-                "HTML Editor - Untitled Document"
-            )  # Default title if no file is opened
+            self.root.title("HTML Editor - Untitled Document")  # Default title if no file is opened
 
     def auto_save(self):
         """Saves the current document automatically at regular intervals if enabled."""
@@ -624,10 +644,11 @@ class HTMLEditor:
         self.auto_save_enabled = not self.auto_save_enabled  # Toggle the flag
         status = "enabled" if self.auto_save_enabled else "disabled"
         messagebox.showinfo("Auto Save", f"Auto save is now {status}.")
+
+
     #####################################
     # Open file in browser
     #####################################
-
     def open_document_in_browser(self):
         """Opens the document in a new tab, automatically reloads page when saved"""
         try:
@@ -638,10 +659,10 @@ class HTMLEditor:
         except Exception as e:
             messagebox.showerror("Error", f"Failed to open document: {str(e)}")
 
+
     #####################################
     # Font size (zoom)
     #####################################
-
     def change_zoom(self):
         """Creates a window to change the font size (zoom)"""
         top = Toplevel(self.root)
@@ -678,10 +699,10 @@ class HTMLEditor:
         )  # Prevents font size from going below 1
         self.text_area.config(font=("Consolas", new_size))
 
+
     #####################################
     # Information, settings window
     #####################################
-
     def info_window(self):
         """Creates a window with information about the application"""
         top = Toplevel(self.root)
@@ -867,7 +888,13 @@ class HTMLEditor:
 
         button_frame3 = Frame(scrollable_frame, width=200, height=20, bg="#333333")
         button_frame3.pack(pady=10)
-        Button(scrollable_frame, text="Toggle Auto Save", bg="#0099cc", fg="#f0f0f0", command=self.toggle_auto_save).pack(pady=10)
+        Button(
+            scrollable_frame,
+            text="Toggle Auto Save",
+            bg="#0099cc",
+            fg="#f0f0f0",
+            command=self.toggle_auto_save,
+        ).pack(pady=10)
 
         ttk.Separator(scrollable_frame, orient="horizontal").pack(
             fill="x", padx=10, pady=10
@@ -902,7 +929,6 @@ class HTMLEditor:
     #####################################
     # Find/Replace
     #####################################
-
     def find_replace(self):
         """Find and replace engine for HTMLEditor"""
         find_replace_window = Toplevel(self.root)
@@ -1001,10 +1027,10 @@ class HTMLEditor:
         )
         close_button.pack(pady=5)
 
+
     #####################################
     # Appearance modes
     #####################################
-
     def change_to_light_mode(self):
         """Changes to light mode"""
         self.mode = "light"  # Set mode
@@ -1077,10 +1103,10 @@ class HTMLEditor:
         self.frButton.config(bg="#ffffff", fg="#000000")
         self.settingsbutton.config(bg="#ffffff", fg="#000000")
 
+
     #####################################
     # Add exit confirmation method
     #####################################
-
     def confirm_exit(self):
         """Confirms exit of the application"""
         if self.unsaved_changes:  # Check if there are unsaved changes
@@ -1096,5 +1122,4 @@ class HTMLEditor:
 #####################################
 # Init main class
 #####################################
-
 HTMLEditor.init()

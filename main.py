@@ -239,7 +239,7 @@ class HTMLEditor:
         self.text_area.pack(fill=BOTH, expand=True)
 
         font = tkfont.Font(font=self.text_area["font"])
-        tab_size = font.measure("       ")  # Edit this to change tab size to your needs
+        tab_size = font.measure("   ")  # Edit this to change tab size to your needs
         self.text_area.config(tabs=tab_size)
         self.text_area.bind("<<Modified>>", self.on_text_change)  # Track changes
 

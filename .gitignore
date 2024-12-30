@@ -1,1 +1,7 @@
+# Editor etc.
+.hintrc
+.vscode
+.DS_Store
+# Testing files
 test.py
+testing/

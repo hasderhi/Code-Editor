@@ -1,0 +1,18 @@
+body {
+    background-color: lightgray;
+    font-family: Verdana;
+}
+.top {
+    background-color: #f2f2f2;
+    margin: 5%;
+    padding: 5%;
+    border: None;
+    border-radius: 30px;
+    box-shadow: 3px 3px 5px 5px gray;
+
+}
+.title-container {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+}

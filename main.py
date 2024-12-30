@@ -80,6 +80,7 @@ class HTMLEditor:
         self.unsaved_changes = False                # Track changes
         self.safe_mode = False                      # Track if safe mode is enabled
         self.auto_save_enabled = False              # Flag for auto-save status
+        self.tag_completion_enabled = True          # Flag to track tag completion status
         self.current_file_path = None               # Initialize current_file_path
         self.set_icon()                             # Init icon function
 
@@ -114,7 +115,9 @@ class HTMLEditor:
         self.root.bind(
             "<Control-f>", lambda event: self.find_replace()
         )  # CTRL_F         >   Find and Replace
-
+        self.root.bind(
+            ">", lambda event: self.complete_tag(event)
+        )  # Bind '>' key for tag completion
 
         #####################################
         # Init widgets, set up text area
@@ -534,6 +537,51 @@ class HTMLEditor:
 
 
     #####################################
+    # Tag Completion Function
+    #####################################
+    def toggle_tag_completion(self):
+        """Toggles the tag completion feature on and off."""
+        self.tag_completion_enabled = not self.tag_completion_enabled
+        status = "enabled" if self.tag_completion_enabled else "disabled"
+        messagebox.showinfo("Tag Completion", f"Tag completion is now {status}.")
+
+    def complete_tag(self, event):
+        """Completes the HTML tag at the cursor position."""
+        if not self.tag_completion_enabled:  # Check if tag completion is enabled
+            return  # Exit if tag completion is disabled
+
+        # Get the current cursor position
+        cursor_index = self.text_area.index(INSERT)
+        line_text = self.text_area.get(cursor_index.split('.')[0] + ".0", cursor_index)
+
+        # Define a list of self-closing tags
+        self_closing_tags = ["area", "base", "br", "col", "embed", "hr", "img", "input", "keygen", "link", "meta", "param", "source", "track", "wbr"]
+        opening_tag_pattern = r"<(\w+)(\s*[^>]*)?>"
+        closing_tag_pattern = r"</(\w+)>"
+
+        # Find all opening tags and closing tags in the line
+        opening_tags = []
+        closing_tags = []
+
+        for match in re.finditer(opening_tag_pattern, line_text):
+            opening_tags.append(match.group(1))
+
+        for match in re.finditer(closing_tag_pattern, line_text):
+            closing_tags.append(match.group(1))
+
+        # Check for the most recent unclosed opening tag
+        for tag in reversed(opening_tags):
+            if tag not in self_closing_tags and opening_tags.count(tag) > closing_tags.count(tag):
+                # Insert the closing tag at the cursor position
+                self.text_area.insert(cursor_index, f"</{tag}>")
+                # Move the cursor after the closing tag
+                self.text_area.mark_set(INSERT, cursor_index)
+                return "break"  # Prevent default behavior of the key event
+
+        return "break"  # Prevent default behavior if no tag is found
+
+
+    #####################################
     # Save, open, autosave functions, title bar update
     #####################################
     def new_document(self):
@@ -901,7 +949,7 @@ class HTMLEditor:
         )
         Label(
             scrollable_frame,
-            text="About and licensing",
+            text="Tag completition",
             font=("TkDefaultFont", 15),
             fg="#ffffff",
             bg="#333333",
@@ -911,6 +959,28 @@ class HTMLEditor:
         button_frame4.pack(pady=10)
         Button(
             button_frame4,
+            text="Toggle Tag Completion",
+            font=("TkDefaultFont"),
+            fg="#ffffff",
+            bg="#333333",
+            command=self.toggle_tag_completion,
+        ).pack(side=LEFT, padx=5)
+
+        ttk.Separator(scrollable_frame, orient="horizontal").pack(
+            fill="x", padx=10, pady=10
+        )
+        Label(
+            scrollable_frame,
+            text="About and licensing",
+            font=("TkDefaultFont", 15),
+            fg="#ffffff",
+            bg="#333333",
+        ).pack(anchor="center")
+
+        button_frame5 = Frame(scrollable_frame, width=200, height=20, bg="#333333")
+        button_frame5.pack(pady=10)
+        Button(
+            button_frame5,
             text="About HTML editor",
             font=("TkDefaultFont"),
             fg="#ffffff",
@@ -918,7 +988,7 @@ class HTMLEditor:
             command=self.info_window,
         ).pack(side=LEFT, padx=5)
         Button(
-            button_frame4,
+            button_frame5,
             text="Show license",
             font=("TkDefaultFont"),
             fg="#ffffff",

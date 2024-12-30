@@ -1,5 +1,5 @@
 #####################################
-# HTMLeditor v1.0.5 - Source
+# HTMLeditor v1.0.6 - Source
 #####################################
 
 
@@ -250,7 +250,7 @@ class HTMLEditor:
         """Sets the application icon."""
         if pillow_imported:
             try:
-                icon = Image.open("favicon.ico")
+                icon = Image.open("icons/favicon.ico")
                 icon = icon.resize((16, 16))  # Resize to appropriate icon size
                 self.icon_image = ImageTk.PhotoImage(icon)  # Store the reference in the instance
                 self.root.iconphoto(True, self.icon_image)  # Set the icon
@@ -609,7 +609,7 @@ class HTMLEditor:
         return "break"  # Prevent default behavior if no action is taken
 
     #####################################
-    # Save, open, autosave functions, title bar update
+    # Save, open, autosave functions, title bar update, safe mode, text modfied detector
     #####################################
     def new_document(self):
         "Creates a new instance of HTMLEditor for a new window"
@@ -640,6 +640,7 @@ class HTMLEditor:
                 defaultextension=".html",
                 filetypes=[
                     ("HTML Sites", "*.html"),
+                    ("HTML Sites", "*.htm"),
                     ("Cascading Style Sheets", "*.css"),
                     ("JavaScript Scripts", "*.js"),
                     ("Markdown Text Files", "*.md"),
@@ -676,10 +677,11 @@ class HTMLEditor:
                 defaultextension=".html",
                 filetypes=[
                     ("HTML Sites", "*.html"),
+                    ("HTML Sites", "*.htm"),
                     ("Cascading Style Sheets", "*.css"),
                     ("JavaScript Scripts", "*.js"),
-                    ("Standard Text Files", "*.txt"),
                     ("Markdown Text Files", "*.md"),
+                    ("Standard Text Files", "*.txt"),
                     ("All Files", "*.*"),
                 ],
             )
@@ -788,7 +790,7 @@ class HTMLEditor:
 
         # Load and resize the logo
         try:
-            logo = Image.open("logo.png")
+            logo = Image.open("icons/logo.png")
             logo = logo.resize((50, 50))  # Resize to 50x50 pixels
             self.logo_image = ImageTk.PhotoImage(logo)  # Store the reference in the instance
             logo_label = Label(top, image=self.logo_image)

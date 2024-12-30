@@ -1,6 +1,6 @@
 # HTML Editor
 
-![Html Editor logo](logo.png)
+![Html Editor logo](icons/logo.png)
 
 This is my HTML, CSS, JavaScript and Markdown editor written in Python. Even though it uses just one external library (Pillow for icons), it has some functions like syntax highlighting and tag completition for HTML, CSS, JavaScript and Markdown code, an autosave function and a function to run the code with one click directly in the program.
 

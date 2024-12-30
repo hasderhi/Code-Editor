@@ -33,11 +33,17 @@
 
 - ToDo: Rework the readme
 
-### 1.0.5 (latest release)
+### 1.0.5
 
 - Change: Fixed an issue with the auto save function
 - Change: Rewrote the readme
 
 - Known Issue: When opening a new window with the "new" option, the program fails to load the icon for the "About" window. This is because of a faulty icon loader and will be fixed as soon as possible.
+
+### 1.0.6 (latest release)
+
+- Change: Added a tag and string autocomplete feature
+- Change: Fixed various issues with the GUI
+- Change: Fixed the errors occuring when trying to open the info window in a new instance created with the "new" button
 
 # tk_dev - Software with passion!

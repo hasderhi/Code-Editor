@@ -2,7 +2,7 @@
 
 ![Html Editor logo](logo.png)
 
-This is my HTML, CSS, JavaScript and Markdown editor written in Python. Even though it uses just one external library (Pillow for icons), it has some functions like syntax highlighting for HTML, CSS, JavaScript and Markdown code, an autosave function and a function to run the code with one click directly in the program.
+This is my HTML, CSS, JavaScript and Markdown editor written in Python. Even though it uses just one external library (Pillow for icons), it has some functions like syntax highlighting and tag completition for HTML, CSS, JavaScript and Markdown code, an autosave function and a function to run the code with one click directly in the program.
 
 ## Why use this editor?
 
@@ -61,6 +61,10 @@ def auto_save(self):
             10000, self.auto_save # <-- Here
         )
 ```
+
+### Tag auto completition
+
+The editor will auto complete HTML tags and strings if you start typing them in the editor. This feature can be turned off in settings.
 
 ### Appearance
 

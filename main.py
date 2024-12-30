@@ -118,6 +118,9 @@ class HTMLEditor:
         self.root.bind(
             ">", lambda event: self.complete_tag(event)
         )  # Bind '>' key for tag completion
+        self.root.bind(
+            '"', lambda event: self.complete_string(event)
+        )  # Bind '"' key for string completion
 
         #####################################
         # Init widgets, set up text area
@@ -248,8 +251,9 @@ class HTMLEditor:
         if pillow_imported:
             try:
                 icon = Image.open("favicon.ico")
-                icon = ImageTk.PhotoImage(icon)
-                self.root.iconphoto(True, icon)
+                icon = icon.resize((16, 16))  # Resize to appropriate icon size
+                self.icon_image = ImageTk.PhotoImage(icon)  # Store the reference in the instance
+                self.root.iconphoto(True, self.icon_image)  # Set the icon
             except Exception as e:
                 print(f"Error setting icon: {e}")
 
@@ -537,7 +541,7 @@ class HTMLEditor:
 
 
     #####################################
-    # Tag Completion Function
+    # Tag/String Auto Complete Function
     #####################################
     def toggle_tag_completion(self):
         """Toggles the tag completion feature on and off."""
@@ -580,6 +584,29 @@ class HTMLEditor:
 
         return "break"  # Prevent default behavior if no tag is found
 
+    def complete_string(self, event):
+        """Completes the double string at the cursor position."""
+        # Check if string completion is enabled
+        if not self.tag_completion_enabled:
+            return  # Exit if string completion is disabled
+
+        # Get the current cursor position
+        cursor_index = self.text_area.index(INSERT)
+        line_text = self.text_area.get(cursor_index.split('.')[0] + ".0", cursor_index)
+
+        # Check if the last character is a double quote
+        if line_text and line_text[-1] == '"':
+            # Insert another double quote at the cursor position
+            self.text_area.insert(cursor_index, '"')
+            # Move the cursor between the quotes
+            self.text_area.mark_set(INSERT, cursor_index)
+            return "break"  # Prevent default behavior of the key event
+
+        # If the last character is not a double quote, just insert one
+        self.text_area.insert(cursor_index, '"')
+        # Move the cursor after the inserted quote
+        self.text_area.mark_set(INSERT, cursor_index)
+        return "break"  # Prevent default behavior if no action is taken
 
     #####################################
     # Save, open, autosave functions, title bar update
@@ -749,7 +776,7 @@ class HTMLEditor:
 
 
     #####################################
-    # Information, settings window
+    # Information, settings, license window
     #####################################
     def info_window(self):
         """Creates a window with information about the application"""
@@ -758,14 +785,17 @@ class HTMLEditor:
         top.geometry("300x150")
         top.config(bg="#333333")
         top.resizable(False, False)
-        # Load and resize the logo
-        logo = Image.open("logo.png")
-        logo = logo.resize((50, 50))  # Resize to 100x100 pixels
-        logo = ImageTk.PhotoImage(logo)
 
-        logo_label = Label(top, image=logo)
-        logo_label.image = logo  # Keep a reference to avoid garbage collection
-        logo_label.pack()
+        # Load and resize the logo
+        try:
+            logo = Image.open("logo.png")
+            logo = logo.resize((50, 50))  # Resize to 50x50 pixels
+            self.logo_image = ImageTk.PhotoImage(logo)  # Store the reference in the instance
+            logo_label = Label(top, image=self.logo_image)
+            logo_label.image = self.logo_image  # Keep a reference to avoid garbage collection
+            logo_label.pack()
+        except Exception as e:
+            Label(top, text="Logo not available in new window", fg="#ffffff", bg="#333333").pack()
 
         Label(top, text="HTML Editor", fg="#ffffff", bg="#333333").pack()
         Label(top, text="Version 1.0", fg="#ffffff", bg="#333333").pack()
@@ -779,6 +809,7 @@ class HTMLEditor:
         top.geometry("600x600")
         top.config(bg="#333333")
         top.resizable(False, False)
+
         Label(
             top,
             font=("TkDefaultFont", 20),
@@ -786,17 +817,37 @@ class HTMLEditor:
             fg="#ffffff",
             bg="#333333",
         ).pack()
+
         Label(
             top,
             text="Copyright (c) 2024 Tobias Kisling (hasderhi)",
             fg="#ffffff",
             bg="#333333",
         ).pack()
+        
         Label(
             top,
             fg="#ffffff",
             bg="#333333",
-            text="Permission is hereby granted, free of charge, \nto any person obtaining a copy of this software and associated\ndocumentation files (the 'Software'),\nto deal in the Software without restriction, including without limitation the rights to use,\ncopy, modify, merge, publish, distribute, sublicense,\nand/or sell copies of the Software, and to permit persons to\nwhom the Software is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be\nincluded in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED 'AS IS',\nWITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,\nINCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.\nIN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,\nDAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,\nARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR\nTHE USE OR OTHER DEALINGS IN THE SOFTWARE.\n\nHTML5 Logo by <https://www.w3.org/>",
+            text=
+            """Permission is hereby granted, free of charge, to any person obtaining a copy of this software 
+            and associated documentation files (the 'Software'), to deal in the Software without restriction, 
+            including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
+            and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, 
+            subject to the following conditions:
+            
+            The above copyright notice and this permission notice shall be
+            included in all copies or substantial portions of the Software.
+            
+            THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, 
+            EXPRESS OR IMPLIED,INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY
+            FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
+            OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER 
+            IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,ARISING FROM, OUT OF OR IN CONNECTION
+            WITH THE SOFTWARE OR\nTHE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+            HTML5 Logo by <https://www.w3.org/>""",
         ).pack()
 
     def settings_window(self):
@@ -814,9 +865,9 @@ class HTMLEditor:
             fg="#ffffff",
             bg="#333333",
         ).pack(pady=10, anchor="center")
-        ttk.Separator(top, orient="horizontal").pack(
-            fill="x", padx=10, pady=10
-        )
+
+        ttk.Separator(top, orient="horizontal").pack(fill="x", padx=10, pady=10)
+
         Label(
             top,
             text="Appearance",
@@ -861,9 +912,8 @@ class HTMLEditor:
             command=self.change_to_black_white_mode,
         ).pack(side=LEFT, padx=5)
 
-        ttk.Separator(top, orient="horizontal").pack(
-            fill="x", padx=10, pady=10
-        )
+        ttk.Separator(top, orient="horizontal").pack(fill="x", padx=10, pady=10)
+
         Label(
             top,
             text="Safe Mode",
@@ -881,6 +931,7 @@ class HTMLEditor:
 
         button_frame2 = Frame(top, width=200, height=20, bg="#333333")
         button_frame2.pack(pady=10)
+
         Button(
             button_frame2,
             text="Toggle Safe Mode",
@@ -889,9 +940,8 @@ class HTMLEditor:
             command=self.toggle_safe_mode,
         ).pack(side=LEFT, padx=5)
 
-        ttk.Separator(top, orient="horizontal").pack(
-            fill="x", padx=10, pady=10
-        )
+        ttk.Separator(top, orient="horizontal").pack(fill="x", padx=10, pady=10)
+
         Label(
             top,
             text="Auto Save",
@@ -909,6 +959,7 @@ class HTMLEditor:
 
         button_frame3 = Frame(top, width=200, height=20, bg="#333333")
         button_frame3.pack(pady=10)
+
         Button(
             top,
             text="Toggle Auto Save",
@@ -917,9 +968,8 @@ class HTMLEditor:
             command=self.toggle_auto_save,
         ).pack(pady=10)
 
-        ttk.Separator(top, orient="horizontal").pack(
-            fill="x", padx=10, pady=10
-        )
+        ttk.Separator(top, orient="horizontal").pack(fill="x", padx=10, pady=10)
+
         Label(
             top,
             text="Tag completition",
@@ -930,6 +980,7 @@ class HTMLEditor:
 
         button_frame4 = Frame(top, width=200, height=20, bg="#333333")
         button_frame4.pack(pady=10)
+
         Button(
             button_frame4,
             text="Toggle Tag Completion",
@@ -939,9 +990,8 @@ class HTMLEditor:
             command=self.toggle_tag_completion,
         ).pack(side=LEFT, padx=5)
 
-        ttk.Separator(top, orient="horizontal").pack(
-            fill="x", padx=10, pady=10
-        )
+        ttk.Separator(top, orient="horizontal").pack(fill="x", padx=10, pady=10)
+
         Label(
             top,
             text="About and licensing",
@@ -952,6 +1002,7 @@ class HTMLEditor:
 
         button_frame5 = Frame(top, width=200, height=20, bg="#333333")
         button_frame5.pack(pady=10)
+        
         Button(
             button_frame5,
             text="About HTML editor",

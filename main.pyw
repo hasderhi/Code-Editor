@@ -80,6 +80,7 @@ class HTMLEditor:
         self.unsaved_changes = False                # Track changes
         self.safe_mode = False                      # Track if safe mode is enabled
         self.auto_save_enabled = False              # Flag for auto-save status
+        self.tag_completion_enabled = True          # Flag to track tag completion status
         self.current_file_path = None               # Initialize current_file_path
         self.set_icon()                             # Init icon function
 
@@ -114,7 +115,12 @@ class HTMLEditor:
         self.root.bind(
             "<Control-f>", lambda event: self.find_replace()
         )  # CTRL_F         >   Find and Replace
-
+        self.root.bind(
+            ">", lambda event: self.complete_tag(event)
+        )  # Bind '>' key for tag completion
+        self.root.bind(
+            '"', lambda event: self.complete_string(event)
+        )  # Bind '"' key for string completion
 
         #####################################
         # Init widgets, set up text area
@@ -245,8 +251,9 @@ class HTMLEditor:
         if pillow_imported:
             try:
                 icon = Image.open("favicon.ico")
-                icon = ImageTk.PhotoImage(icon)
-                self.root.iconphoto(True, icon)
+                icon = icon.resize((16, 16))  # Resize to appropriate icon size
+                self.icon_image = ImageTk.PhotoImage(icon)  # Store the reference in the instance
+                self.root.iconphoto(True, self.icon_image)  # Set the icon
             except Exception as e:
                 print(f"Error setting icon: {e}")
 
@@ -534,6 +541,74 @@ class HTMLEditor:
 
 
     #####################################
+    # Tag/String Auto Complete Function
+    #####################################
+    def toggle_tag_completion(self):
+        """Toggles the tag completion feature on and off."""
+        self.tag_completion_enabled = not self.tag_completion_enabled
+        status = "enabled" if self.tag_completion_enabled else "disabled"
+        messagebox.showinfo("Tag Completion", f"Tag completion is now {status}.")
+
+    def complete_tag(self, event):
+        """Completes the HTML tag at the cursor position."""
+        if not self.tag_completion_enabled:  # Check if tag completion is enabled
+            return  # Exit if tag completion is disabled
+
+        # Get the current cursor position
+        cursor_index = self.text_area.index(INSERT)
+        line_text = self.text_area.get(cursor_index.split('.')[0] + ".0", cursor_index)
+
+        # Define a list of self-closing tags
+        self_closing_tags = ["area", "base", "br", "col", "embed", "hr", "img", "input", "keygen", "link", "meta", "param", "source", "track", "wbr"]
+        opening_tag_pattern = r"<(\w+)(\s*[^>]*)?>"
+        closing_tag_pattern = r"</(\w+)>"
+
+        # Find all opening tags and closing tags in the line
+        opening_tags = []
+        closing_tags = []
+
+        for match in re.finditer(opening_tag_pattern, line_text):
+            opening_tags.append(match.group(1))
+
+        for match in re.finditer(closing_tag_pattern, line_text):
+            closing_tags.append(match.group(1))
+
+        # Check for the most recent unclosed opening tag
+        for tag in reversed(opening_tags):
+            if tag not in self_closing_tags and opening_tags.count(tag) > closing_tags.count(tag):
+                # Insert the closing tag at the cursor position
+                self.text_area.insert(cursor_index, f"</{tag}>")
+                # Move the cursor after the closing tag
+                self.text_area.mark_set(INSERT, cursor_index)
+                return "break"  # Prevent default behavior of the key event
+
+        return "break"  # Prevent default behavior if no tag is found
+
+    def complete_string(self, event):
+        """Completes the double string at the cursor position."""
+        # Check if string completion is enabled
+        if not self.tag_completion_enabled:
+            return  # Exit if string completion is disabled
+
+        # Get the current cursor position
+        cursor_index = self.text_area.index(INSERT)
+        line_text = self.text_area.get(cursor_index.split('.')[0] + ".0", cursor_index)
+
+        # Check if the last character is a double quote
+        if line_text and line_text[-1] == '"':
+            # Insert another double quote at the cursor position
+            self.text_area.insert(cursor_index, '"')
+            # Move the cursor between the quotes
+            self.text_area.mark_set(INSERT, cursor_index)
+            return "break"  # Prevent default behavior of the key event
+
+        # If the last character is not a double quote, just insert one
+        self.text_area.insert(cursor_index, '"')
+        # Move the cursor after the inserted quote
+        self.text_area.mark_set(INSERT, cursor_index)
+        return "break"  # Prevent default behavior if no action is taken
+
+    #####################################
     # Save, open, autosave functions, title bar update
     #####################################
     def new_document(self):
@@ -701,7 +776,7 @@ class HTMLEditor:
 
 
     #####################################
-    # Information, settings window
+    # Information, settings, license window
     #####################################
     def info_window(self):
         """Creates a window with information about the application"""
@@ -710,14 +785,17 @@ class HTMLEditor:
         top.geometry("300x150")
         top.config(bg="#333333")
         top.resizable(False, False)
-        # Load and resize the logo
-        logo = Image.open("logo.png")
-        logo = logo.resize((50, 50))  # Resize to 100x100 pixels
-        logo = ImageTk.PhotoImage(logo)
 
-        logo_label = Label(top, image=logo)
-        logo_label.image = logo  # Keep a reference to avoid garbage collection
-        logo_label.pack()
+        # Load and resize the logo
+        try:
+            logo = Image.open("logo.png")
+            logo = logo.resize((50, 50))  # Resize to 50x50 pixels
+            self.logo_image = ImageTk.PhotoImage(logo)  # Store the reference in the instance
+            logo_label = Label(top, image=self.logo_image)
+            logo_label.image = self.logo_image  # Keep a reference to avoid garbage collection
+            logo_label.pack()
+        except Exception as e:
+            Label(top, text="Logo not available in new window", fg="#ffffff", bg="#333333").pack()
 
         Label(top, text="HTML Editor", fg="#ffffff", bg="#333333").pack()
         Label(top, text="Version 1.0", fg="#ffffff", bg="#333333").pack()
@@ -731,6 +809,7 @@ class HTMLEditor:
         top.geometry("600x600")
         top.config(bg="#333333")
         top.resizable(False, False)
+
         Label(
             top,
             font=("TkDefaultFont", 20),
@@ -738,73 +817,66 @@ class HTMLEditor:
             fg="#ffffff",
             bg="#333333",
         ).pack()
+
         Label(
             top,
             text="Copyright (c) 2024 Tobias Kisling (hasderhi)",
             fg="#ffffff",
             bg="#333333",
         ).pack()
+        
         Label(
             top,
             fg="#ffffff",
             bg="#333333",
-            text="Permission is hereby granted, free of charge, \nto any person obtaining a copy of this software and associated\ndocumentation files (the 'Software'),\nto deal in the Software without restriction, including without limitation the rights to use,\ncopy, modify, merge, publish, distribute, sublicense,\nand/or sell copies of the Software, and to permit persons to\nwhom the Software is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be\nincluded in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED 'AS IS',\nWITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,\nINCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.\nIN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,\nDAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,\nARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR\nTHE USE OR OTHER DEALINGS IN THE SOFTWARE.\n\nHTML5 Logo by <https://www.w3.org/>",
+            text=
+            """Permission is hereby granted, free of charge, to any person obtaining a copy of this software 
+            and associated documentation files (the 'Software'), to deal in the Software without restriction, 
+            including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
+            and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, 
+            subject to the following conditions:
+            
+            The above copyright notice and this permission notice shall be
+            included in all copies or substantial portions of the Software.
+            
+            THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, 
+            EXPRESS OR IMPLIED,INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY
+            FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
+            OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER 
+            IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,ARISING FROM, OUT OF OR IN CONNECTION
+            WITH THE SOFTWARE OR\nTHE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+            HTML5 Logo by <https://www.w3.org/>""",
         ).pack()
 
     def settings_window(self):
         """Creates a toplevel window with settings"""
         top = Toplevel(self.root)
         top.title("Settings")
-        top.geometry("600x600")
+        top.geometry("600x700")
         top.config(bg="#333333")
-        top.resizable(False, False)
+        top.resizable(False, True)
 
-        # Create a canvas
-        canvas = Canvas(top, bg="#333333")
-        scrollable_frame = Frame(canvas, bg="#333333")
-
-        # Configure the canvas
-        scrollable_frame.bind(
-            "<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
-        )
-
-        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
-
-        # Pack the canvas
-        canvas.pack(side="left", fill="both", expand=True)
-
-        # Add mouse wheel scrolling
-        def on_mouse_wheel(event):
-            canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
-
-        canvas.bind_all("<MouseWheel>", on_mouse_wheel)  # For Windows
-        canvas.bind_all(
-            "<Button-4>", lambda event: canvas.yview_scroll(-1, "units")
-        )  # For Linux
-        canvas.bind_all(
-            "<Button-5>", lambda event: canvas.yview_scroll(1, "units")
-        )  # For Linux
-
-        # Add your settings content here
         Label(
-            scrollable_frame,
+            top,
             text="Settings",
             font=("TkDefaultFont", 20),
             fg="#ffffff",
             bg="#333333",
         ).pack(pady=10, anchor="center")
-        ttk.Separator(scrollable_frame, orient="horizontal").pack(
-            fill="x", padx=10, pady=10
-        )
+
+        ttk.Separator(top, orient="horizontal").pack(fill="x", padx=10, pady=10)
+
         Label(
-            scrollable_frame,
+            top,
             text="Appearance",
             font=("TkDefaultFont", 15),
             fg="#ffffff",
             bg="#333333",
         ).pack(anchor="center")
 
-        button_frame1 = Frame(scrollable_frame, width=200, height=20, bg="#333333")
+        button_frame1 = Frame(top, width=200, height=20, bg="#333333")
         button_frame1.pack(pady=10)
 
         Button(
@@ -840,26 +912,26 @@ class HTMLEditor:
             command=self.change_to_black_white_mode,
         ).pack(side=LEFT, padx=5)
 
-        ttk.Separator(scrollable_frame, orient="horizontal").pack(
-            fill="x", padx=10, pady=10
-        )
+        ttk.Separator(top, orient="horizontal").pack(fill="x", padx=10, pady=10)
+
         Label(
-            scrollable_frame,
+            top,
             text="Safe Mode",
             font=("TkDefaultFont", 15),
             fg="#ffffff",
             bg="#333333",
         ).pack(anchor="center")
         Label(
-            scrollable_frame,
+            top,
             text="When safe mode is activated, the current document\ncannot be edited. This mode is intended for safe code browsing.\nPlease note that when this mode is activated, other documents cannot be opened\nuntil safe mode is disabled again.",
             font=("TkDefaultFont"),
             fg="#ffffff",
             bg="#333333",
         ).pack(anchor="center")
 
-        button_frame2 = Frame(scrollable_frame, width=200, height=20, bg="#333333")
+        button_frame2 = Frame(top, width=200, height=20, bg="#333333")
         button_frame2.pack(pady=10)
+
         Button(
             button_frame2,
             text="Toggle Safe Mode",
@@ -868,49 +940,71 @@ class HTMLEditor:
             command=self.toggle_safe_mode,
         ).pack(side=LEFT, padx=5)
 
-        ttk.Separator(scrollable_frame, orient="horizontal").pack(
-            fill="x", padx=10, pady=10
-        )
+        ttk.Separator(top, orient="horizontal").pack(fill="x", padx=10, pady=10)
+
         Label(
-            scrollable_frame,
+            top,
             text="Auto Save",
             font=("TkDefaultFont", 15),
             fg="#ffffff",
             bg="#333333",
         ).pack(anchor="center")
         Label(
-            scrollable_frame,
+            top,
             text=" When auto save is activated, the current document\nis saved every 10 seconds.",
             font=("TkDefaultFont"),
             fg="#ffffff",
             bg="#333333",
         ).pack(anchor="center")
 
-        button_frame3 = Frame(scrollable_frame, width=200, height=20, bg="#333333")
+        button_frame3 = Frame(top, width=200, height=20, bg="#333333")
         button_frame3.pack(pady=10)
+
         Button(
-            scrollable_frame,
+            top,
             text="Toggle Auto Save",
             bg="#0099cc",
             fg="#f0f0f0",
             command=self.toggle_auto_save,
         ).pack(pady=10)
 
-        ttk.Separator(scrollable_frame, orient="horizontal").pack(
-            fill="x", padx=10, pady=10
-        )
+        ttk.Separator(top, orient="horizontal").pack(fill="x", padx=10, pady=10)
+
         Label(
-            scrollable_frame,
+            top,
+            text="Tag completition",
+            font=("TkDefaultFont", 15),
+            fg="#ffffff",
+            bg="#333333",
+        ).pack(anchor="center")
+
+        button_frame4 = Frame(top, width=200, height=20, bg="#333333")
+        button_frame4.pack(pady=10)
+
+        Button(
+            button_frame4,
+            text="Toggle Tag Completion",
+            font=("TkDefaultFont"),
+            fg="#ffffff",
+            bg="#333333",
+            command=self.toggle_tag_completion,
+        ).pack(side=LEFT, padx=5)
+
+        ttk.Separator(top, orient="horizontal").pack(fill="x", padx=10, pady=10)
+
+        Label(
+            top,
             text="About and licensing",
             font=("TkDefaultFont", 15),
             fg="#ffffff",
             bg="#333333",
         ).pack(anchor="center")
 
-        button_frame4 = Frame(scrollable_frame, width=200, height=20, bg="#333333")
-        button_frame4.pack(pady=10)
+        button_frame5 = Frame(top, width=200, height=20, bg="#333333")
+        button_frame5.pack(pady=10)
+        
         Button(
-            button_frame4,
+            button_frame5,
             text="About HTML editor",
             font=("TkDefaultFont"),
             fg="#ffffff",
@@ -918,7 +1012,7 @@ class HTMLEditor:
             command=self.info_window,
         ).pack(side=LEFT, padx=5)
         Button(
-            button_frame4,
+            button_frame5,
             text="Show license",
             font=("TkDefaultFont"),
             fg="#ffffff",

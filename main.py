@@ -84,7 +84,12 @@ class HTMLEditor:
         self.current_file_path = None               # Initialize current_file_path
         self.set_icon()                             # Init icon function
 
+        # Store the after ID for syntax highlighting
+        self.after_id = None
 
+        # Bind the window close event to cancel the after call
+        self.root.protocol("WM_DELETE_WINDOW", self.on_close)
+        
         #####################################
         # Bind keys on functions
         #####################################
@@ -116,11 +121,21 @@ class HTMLEditor:
             "<Control-f>", lambda event: self.find_replace()
         )  # CTRL_F         >   Find and Replace
         self.root.bind(
+            "<Control-h>", lambda event: self.insert_html_template_01()
+            )  # CTRL_H     >   Insert HTML Template 1
+        self.root.bind(
+            "<Control-H>", lambda event: self.insert_html_template_02()
+            )  # CTRL_SHIFT_H     >   Insert HTML Template 2
+        self.root.bind("<Control-p>", lambda event: self.insert_html_centered_div()
+            )  # CTRL_P    >   Insert HTML Centered Div
+        
+        self.root.bind(
             ">", lambda event: self.complete_tag(event)
         )  # Bind '>' key for tag completion
         self.root.bind(
             '"', lambda event: self.complete_string(event)
         )  # Bind '"' key for string completion
+        
 
         #####################################
         # Init widgets, set up text area
@@ -255,7 +270,7 @@ class HTMLEditor:
                 self.icon_image = ImageTk.PhotoImage(icon)  # Store the reference in the instance
                 self.root.iconphoto(True, self.icon_image)  # Set the icon
             except Exception as e:
-                print(f"Error setting icon: {e}")
+                pass
 
     #####################################
     # Highlight syntax
@@ -537,7 +552,7 @@ class HTMLEditor:
                 self.text_area.tag_config("px_value", foreground="#000000")
 
         # Schedule next update
-        self.root.after(100, self.update_syntax_highlighting)
+        self.after_id = self.root.after(100, self.update_syntax_highlighting)
 
 
     #####################################
@@ -608,6 +623,63 @@ class HTMLEditor:
         self.text_area.mark_set(INSERT, cursor_index)
         return "break"  # Prevent default behavior if no action is taken
 
+
+    def insert_html_template_01(self):
+        """Inserts a basic HTML template at the cursor position."""
+        html_template = """<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+    </head>
+    <body>
+    
+    </body>
+</html>"""
+        
+        # Get the current cursor position
+        cursor_index = self.text_area.index(INSERT)
+        
+        # Insert the HTML template at the cursor position
+        self.text_area.insert(cursor_index, html_template)
+
+
+    def insert_html_template_02(self):
+        """Inserts a basic HTML template at the cursor position."""
+        html_template = """<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="icon" type="image/x-icon" href="favicon.ico">
+        <link rel="stylesheet" href="styles.css">
+        <title>Document</title>
+        <meta name="description" content="Description">
+    </head>
+    <body>
+    
+    </body>
+</html>"""
+        
+        # Get the current cursor position
+        cursor_index = self.text_area.index(INSERT)
+        
+        # Insert the HTML template at the cursor position
+        self.text_area.insert(cursor_index, html_template)
+
+
+    def insert_html_centered_div(self):
+        """Inserts a centered div at the cursor position."""
+        html_template = """<div style="max-width: fit-content; margin-left: auto; margin-right: auto;"><div>"""
+        
+        # Get the current cursor position
+        cursor_index = self.text_area.index(INSERT)
+        
+        # Insert the HTML template at the cursor position
+        self.text_area.insert(cursor_index, html_template)
+
+
     #####################################
     # Save, open, autosave functions, title bar update, safe mode, text modfied detector
     #####################################
@@ -639,6 +711,13 @@ class HTMLEditor:
             file_path = filedialog.asksaveasfilename(
                 defaultextension=".html",
                 filetypes=[
+                    ("All supported filetypes", "*.html"),
+                    ("All supported filetypes", "*.htm"),
+                    ("All supported filetypes", "*.css"),
+                    ("All supported filetypes", "*.js"),
+                    ("All supported filetypes", "*.md"),
+                    ("All supported filetypes", "*.txt"),
+
                     ("HTML Sites", "*.html"),
                     ("HTML Sites", "*.htm"),
                     ("Cascading Style Sheets", "*.css"),
@@ -676,6 +755,13 @@ class HTMLEditor:
             file_path = filedialog.askopenfilename(
                 defaultextension=".html",
                 filetypes=[
+                    ("All supported filetypes", "*.html"),
+                    ("All supported filetypes", "*.htm"),
+                    ("All supported filetypes", "*.css"),
+                    ("All supported filetypes", "*.js"),
+                    ("All supported filetypes", "*.md"),
+                    ("All supported filetypes", "*.txt"),
+
                     ("HTML Sites", "*.html"),
                     ("HTML Sites", "*.htm"),
                     ("Cascading Style Sheets", "*.css"),
@@ -727,7 +813,7 @@ class HTMLEditor:
     # Open file in browser
     #####################################
     def open_document_in_browser(self):
-        """Opens the document in a new tab, automatically reloads page when saved"""
+        """Opens the document in a new tab"""
         try:
             if self.current_file_path:  # Use the current file path
                 webbrowser.open(self.current_file_path)
@@ -1136,7 +1222,6 @@ class HTMLEditor:
 
         # Menu area button colors
         self.infoButton.config(bg="#ffff00", fg="#4d4d4d")
-        self.autoSaveEnableButton.config(bg="#0099cc", fg="#f0f0f0")
         self.saveAsButton.config(bg="#3366cc", fg="#f0f0f0")
         self.saveButton.config(bg="#3366cc", fg="#f0f0f0")
         self.openButton.config(bg="#ff0066", fg="#f0f0f0")
@@ -1154,7 +1239,6 @@ class HTMLEditor:
 
         # Menu area button colors
         self.infoButton.config(bg="#ffff00", fg="#4d4d4d")
-        self.autoSaveEnableButton.config(bg="#0099cc", fg="#f0f0f0")
         self.saveAsButton.config(bg="#3366cc", fg="#f0f0f0")
         self.saveButton.config(bg="#3366cc", fg="#f0f0f0")
         self.openButton.config(bg="#ff0066", fg="#f0f0f0")
@@ -1172,7 +1256,6 @@ class HTMLEditor:
 
         # Menu area button colors
         self.infoButton.config(bg="#ffffff", fg="#000000")
-        self.autoSaveEnableButton.config(bg="#0099cc", fg="#ffffff")
         self.saveAsButton.config(bg="#3366cc", fg="#ffffff")
         self.saveButton.config(bg="#3366cc", fg="#ffffff")
         self.openButton.config(bg="#ff0066", fg="#ffffff")
@@ -1190,7 +1273,6 @@ class HTMLEditor:
 
         # Menu area button colors
         self.infoButton.config(bg="#ffffff", fg="#000000")
-        self.autoSaveEnableButton.config(bg="#ffffff", fg="#000000")
         self.saveAsButton.config(bg="#ffffff", fg="#000000")
         self.saveButton.config(bg="#ffffff", fg="#000000")
         self.openButton.config(bg="#ffffff", fg="#000000")
@@ -1214,6 +1296,11 @@ class HTMLEditor:
         else:
             self.root.destroy()  # Exit without confirmation if no unsaved changes
 
+    def on_close(self):
+        """Handles the window close event."""
+        if self.after_id:
+            self.root.after_cancel(self.after_id)  # Cancel the scheduled after call
+        self.root.destroy()  # Close the window
 
 #####################################
 # Init main class

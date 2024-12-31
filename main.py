@@ -1,5 +1,5 @@
 """
-# HTMLeditor v1.0.6 - Source
+# HTMLeditor v1.0.7 - Source
 
 This is my HTML, CSS, JavaScript and Markdown editor written in Python. 
 Even though it uses just one external library (Pillow for icons), 

@@ -80,6 +80,8 @@ In the settings, you can switch between 4 themes:
 
 ## Additional information
 
+For more information, please see ```docs/guide.html```
+
 Written by Tobias Kisling
 
 Version 1.0

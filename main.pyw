@@ -976,7 +976,7 @@ class HTMLEditor:
 
         Label(top, text="HTML Editor", fg="#ffffff", bg="#333333").pack()
         Label(top, text="Version 1.0", fg="#ffffff", bg="#333333").pack()
-        Label(top, text="Copyright 2024", fg="#ffffff", bg="#333333").pack()
+        Label(top, text="Copyright 2024-2025", fg="#ffffff", bg="#333333").pack()
         Label(top, text="Author: Tobias Kisling", fg="#ffffff", bg="#333333").pack()
 
     def license_window(self):
@@ -997,7 +997,7 @@ class HTMLEditor:
 
         Label(
             top,
-            text="Copyright (c) 2024 Tobias Kisling (hasderhi)",
+            text="Copyright (c) 2024-2025 Tobias Kisling (hasderhi)",
             fg="#ffffff",
             bg="#333333",
         ).pack()

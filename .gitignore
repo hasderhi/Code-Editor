@@ -2,6 +2,9 @@
 .hintrc
 .vscode
 .DS_Store
+# Python
+.pycache
+__pycache__/
 # Testing files
 test.py
 testing/

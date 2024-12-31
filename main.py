@@ -1,7 +1,14 @@
-#####################################
+"""
 # HTMLeditor v1.0.6 - Source
-#####################################
 
+This is my HTML, CSS, JavaScript and Markdown editor written in Python. 
+Even though it uses just one external library (Pillow for icons), 
+it has some functions like syntax highlighting and tag completition 
+for HTML, CSS, JavaScript and Markdown code, an autosave function and
+a function to run the code with one click directly in the program.
+
+
+"""
 
 #####################################
 # Import necessary libraries
@@ -126,8 +133,12 @@ class HTMLEditor:
         self.root.bind(
             "<Control-H>", lambda event: self.insert_html_template_02()
             )  # CTRL_SHIFT_H     >   Insert HTML Template 2
-        self.root.bind("<Control-p>", lambda event: self.insert_html_centered_div()
+        self.root.bind(
+            "<Control-p>", lambda event: self.insert_html_centered_div()
             )  # CTRL_P    >   Insert HTML Centered Div
+        self.root.bind(
+            "<Control-t>", lambda event: self.open_template()
+        )
         
         self.root.bind(
             ">", lambda event: self.complete_tag(event)
@@ -679,6 +690,84 @@ class HTMLEditor:
         # Insert the HTML template at the cursor position
         self.text_area.insert(cursor_index, html_template)
 
+    def open_template(self):
+        """Copies a template file into the editor."""
+        top = Toplevel(self.root)
+        top.title("Open Template")
+        top.geometry("400x300")
+        top.config(bg="#333333")
+        top.resizable(False, False)
+
+        # Add a title label
+        title_label = Label(
+            top,
+            text="Select a Template",
+            font=("TkDefaultFont", 18, "bold"),
+            fg="#ffffff",
+            bg="#333333",
+        )
+        title_label.pack(pady=10)
+
+        # Add a separator for visual clarity
+        ttk.Separator(top, orient="horizontal").pack(fill="x", padx=10, pady=5)
+
+        # Create a frame to hold the template buttons
+        button_frame = Frame(top, bg="#333333")
+        button_frame.pack(pady=10, padx=10, fill="both", expand=True)
+
+        # Define template names and their corresponding colors
+        templates = [
+            {"name": "Generic Black", "color": "#000000", "file": "generic_black.html"},
+            {"name": "Generic Blue", "color": "#0000ff", "file": "generic_blue.html"},
+            {"name": "Generic Green", "color": "#00ff00", "file": "generic_green.html"},
+            {"name": "Generic Red", "color": "#ff0000", "file": "generic_red.html"},
+        ]
+
+        # Function to load and insert a template
+        def load_template(template_name):
+            try:
+                with open(f"templates/{template_name}", "r") as file:
+                    template_content = file.read()
+                    cursor_index = self.text_area.index(INSERT)
+                    self.text_area.insert(cursor_index, template_content)
+                    messagebox.showinfo("Success", "Template loaded successfully!")
+            except Exception as e:
+                messagebox.showerror("Error", f"Failed to load template: {str(e)}")
+
+        # New approach for creating buttons that should be more efficient
+        for template in templates:
+            template_button = Button(
+                button_frame,
+                text=template["name"],
+                font=("TkDefaultFont", 12),
+                fg="#ffffff",
+                bg=template["color"],
+                width=20,
+                relief="flat",
+                command=lambda t=template["file"]: load_template(t),
+            )
+            template_button.pack(pady=5, padx=10, fill="x")
+
+        close_button = Button(
+            top,
+            text="Close",
+            font=("TkDefaultFont", 12),
+            fg="#ffffff",
+            bg="#ff0066",
+            width=10,
+            relief="flat",
+            command=top.destroy,
+        )
+        close_button.pack(pady=10)
+
+        # Center window on the screen
+        top.update_idletasks()
+        width = top.winfo_width()
+        height = top.winfo_height()
+        x = (top.winfo_screenwidth() // 2) - (width // 2)
+        y = (top.winfo_screenheight() // 2) - (height // 2)
+        top.geometry(f"{width}x{height}+{x}+{y}")
+
 
     #####################################
     # Save, open, autosave functions, title bar update, safe mode, text modfied detector
@@ -1082,7 +1171,7 @@ class HTMLEditor:
 
         Label(
             top,
-            text="About and licensing",
+            text="Templates",
             font=("TkDefaultFont", 15),
             fg="#ffffff",
             bg="#333333",
@@ -1090,9 +1179,31 @@ class HTMLEditor:
 
         button_frame5 = Frame(top, width=200, height=20, bg="#333333")
         button_frame5.pack(pady=10)
-        
+
         Button(
             button_frame5,
+            text="Open template",
+            font=("TkDefaultFont"),
+            fg="#ffffff",
+            bg="#333333",
+            command=self.open_template,
+        ).pack(side=LEFT, padx=5)
+
+        ttk.Separator(top, orient="horizontal").pack(fill="x", padx=10, pady=10)
+
+        Label(
+            top,
+            text="About and licensing",
+            font=("TkDefaultFont", 15),
+            fg="#ffffff",
+            bg="#333333",
+        ).pack(anchor="center")
+
+        button_frame6 = Frame(top, width=200, height=20, bg="#333333")
+        button_frame6.pack(pady=10)
+        
+        Button(
+            button_frame6,
             text="About HTML editor",
             font=("TkDefaultFont"),
             fg="#ffffff",
@@ -1100,7 +1211,7 @@ class HTMLEditor:
             command=self.info_window,
         ).pack(side=LEFT, padx=5)
         Button(
-            button_frame5,
+            button_frame6,
             text="Show license",
             font=("TkDefaultFont"),
             fg="#ffffff",

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Description">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="stylesheet" href="styles.css">
+    <title>MyWebpage</title>
+
+    <!--It is recommended to move styles to an external file-->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            color: #333;
+        }
+    
+        .topnav {
+            background-color: #4d9264;
+            overflow: hidden;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+        }
+    
+        .topnav a {
+            color: #f2f2f2;
+            text-decoration: none;
+            padding: 10px 15px;
+            font-size: 17px;
+        }
+    
+        .topnav a:hover {
+            background-color: #5db67b;
+            border-radius: 5px;
+        }
+    
+        .topnav .logo {
+            font-size: 20px;
+            font-weight: bold;
+            color: #fff;
+        }
+    
+        @media (max-width: 768px) {
+            .topnav {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        
+            .topnav a {
+                padding: 10px;
+                width: 100%;
+                text-align: left;
+            }
+        }
+    
+        .container {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+    
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+    
+        p {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+    
+        footer {
+            background-color: #4d9264;
+            color: #fff;
+            text-align: center;
+            padding: 10px 0;
+            margin-top: 20px;
+        }
+    
+        footer p {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <div class="topnav">
+        <div class="logo">MyWebsite</div>
+        <div>
+            <a href="#home">Home</a>
+            <a href="#about">About</a>
+            <a href="#services">Services</a>
+            <a href="#contact">Contact</a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <h1>Welcome to MyWebsite</h1>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+        <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2025 MyWebsite. All rights reserved.</p>
+    </footer>
+
+</body>
+</html>

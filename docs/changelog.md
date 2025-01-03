@@ -46,7 +46,7 @@
 - Change: Fixed various issues with the GUI
 - Change: Fixed the errors occuring when trying to open the info window in a new instance created with the "new" button
 
-### 1.0.7 (latest release)
+### 1.0.7
 
 - Change: Added templates that can be inserted from the settings window
 - Change: Fixed various issues with the GUI/Icons
@@ -54,5 +54,17 @@
 - Change: Added new suffix ".htm" to the file handling system; added "all supported files" selector
 
 - ToDo: Rewrite the readme/docs to include the changes from this release
+
+### 1.0.8
+
+- Change: Organized the repo
+- Change: Rewrote the readme/docs to include the changes from v1.0.7
+
+### 1.0.9
+
+- Change: Improved the GUI of the main, settings, zoom and find/replace window
+- Change: Fixed an issue with the syntax higlighting function marking code as function that was not a function
+
+- ToDo: Fix further errors in the syntax highlighting
 
 # tk_dev - Software with passion!

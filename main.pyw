@@ -1,5 +1,5 @@
 """
-# HTMLeditor v1.0.8 - Source
+# HTMLeditor v1.0.9 - Source
 
 This is my HTML, CSS, JavaScript and Markdown editor written in Python. 
 Even though it uses just one external library (Pillow for icons), 
@@ -29,14 +29,12 @@ try:
 
     if os.name == "nt":  # If system is win32, import ctypes and set flag to true
         import ctypes
-
         win = True
 
 except Exception as e:
     print(f"Error importing modules: {e}")
     try:
         from tkinter import messagebox
-
         messagebox.showerror("Error", f"Error importing modules: {e}")
         sys.exit(1)
     except Exception as e:
@@ -45,7 +43,6 @@ except Exception as e:
 
 try:
     from PIL import Image, ImageTk  # Try to import Pillow modules
-
     pillow_imported = True
 except ImportError:
     pillow_imported = False
@@ -79,7 +76,7 @@ class HTMLEditor:
         "Main init function of the editor"
         self.root = root
         self.root.title(f"HTML Editor - Untitled Document")  # Default
-        self.root.geometry("800x600")
+        self.root.geometry("850x600")
         self.root.config(bg="#2B2B2B")
         self.root.resizable(True, True)
 
@@ -151,104 +148,125 @@ class HTMLEditor:
         #####################################
         # Init widgets, set up text area
         #####################################
-        self.menu_area = Frame(self.root, width=100, height=50, bg="#4d4d4d")
+        self.menu_area = Frame(self.root, width=100, height=50, bg="#525252")
         self.menu_area.pack(side=TOP)
 
         self.infoButton = Button(
             self.menu_area,
-            width=17,
-            height=2,
-            text="HTML Editor 1.0",
-            bg="#ffff00",
+            relief="flat",
+            width=12,
+            height=1,  
+            text="HTML Editor",
+            bg="#ffa600",
             fg="#000000",
+            font=("TkDefaultFont", 12, "bold"),  
             command=self.info_window,
         )
-        self.infoButton.pack(side=LEFT)
+        self.infoButton.pack(side=LEFT, padx=5, pady=5)  
 
         self.newButton = Button(
             self.menu_area,
-            width=10,
-            height=2,
+            relief="flat",
+            width=6,
+            height=1,  
             text="New",
-            bg="#ffcc00",
-            fg="#000000",
+            bg="#757575",
+            fg="#ffffff",
+            font=("TkDefaultFont", 12, "bold"),
             command=self.new_document,
         )
-        self.newButton.pack(side=LEFT)
+        self.newButton.pack(side=LEFT, padx=5, pady=5)
 
         self.saveAsButton = Button(
             self.menu_area,
-            width=10,
-            height=2,
+            relief="flat",
+            width=8,
+            height=1,
             text="Save as",
-            bg="#3366cc",
-            fg="#f0f0f0",
+            bg="#757575",
+            fg="#ffffff",
+            font=("TkDefaultFont", 12, "bold"),
             command=self.save_document,
         )
-        self.saveAsButton.pack(side=LEFT)
+        self.saveAsButton.pack(side=LEFT, padx=5, pady=5)
 
         self.saveButton = Button(
             self.menu_area,
-            width=10,
-            height=2,
+            relief="flat",
+            width=6,
+            height=1,
             text="Save",
-            bg="#3366cc",
-            fg="#f0f0f0",
+            bg="#757575",
+            fg="#ffffff",
+            font=("TkDefaultFont", 12, "bold"),
             command=self.save_changes,
         )
-        self.saveButton.pack(side=LEFT)
+        self.saveButton.pack(side=LEFT, padx=5, pady=5)
 
         self.openButton = Button(
             self.menu_area,
-            width=10,
-            height=2,
+            relief="flat",
+            width=6,
+            height=1,
             text="Open",
-            bg="#ff0066",
-            fg="#f0f0f0",
+            bg="#757575",
+            fg="#ffffff",
+            font=("TkDefaultFont", 12, "bold"),
             command=self.open_document,
         )
-        self.openButton.pack(side=LEFT)
+        self.openButton.pack(side=LEFT, padx=5, pady=5)
 
         self.runButton = Button(
             self.menu_area,
-            width=10,
-            height=2,
+            relief="flat",
+            width=6,   
+            height=1,   
             text="Run",
-            bg="#ff6600",
+            bg="#757575",
+            fg="#ffffff",
+            font=("TkDefaultFont", 12, "bold"),   
             command=self.open_document_in_browser,
         )
-        self.runButton.pack(side=LEFT)
+        self.runButton.pack(side=LEFT, padx=5, pady=5)   
 
         self.viewButton = Button(
             self.menu_area,
-            width=10,
-            height=2,
+            relief="flat",
+            width=6,   
+            height=1,   
             text="Zoom",
-            bg="#339933",
+            bg="#757575",
+            fg="#ffffff",
+            font=("TkDefaultFont", 12, "bold"),   
             command=self.change_zoom,
         )
-        self.viewButton.pack(side=LEFT)
+        self.viewButton.pack(side=LEFT, padx=5, pady=5)   
 
         self.frButton = Button(
             self.menu_area,
-            width=10,
-            height=2,
+            relief="flat",
+            width=10,   
+            height=1,   
             text="Find/Replace",
-            bg="#ff33cc",
+            bg="#757575",
+            fg="#ffffff",
+            font=("TkDefaultFont", 12, "bold"),   
             command=self.find_replace,
         )
-        self.frButton.pack(side=LEFT)
+        self.frButton.pack(side=LEFT, padx=5, pady=5)   
 
         self.settingsbutton = Button(
             self.menu_area,
-            width=10,
-            height=2,
+            relief="flat",
+            width=8,   
+            height=1,   
             text="Settings",
-            bg="#4d4d4d",
+            bg="#757575",
             fg="#ffffff",
+            font=("TkDefaultFont", 12, "bold"),   
             command=self.settings_window,
         )
-        self.settingsbutton.pack(side=LEFT)
+        self.settingsbutton.pack(side=LEFT, padx=5, pady=5)   
 
         self.text_area = Text(
             self.root,
@@ -277,11 +295,12 @@ class HTMLEditor:
         if pillow_imported:
             try:
                 icon = Image.open("icons/favicon.ico")
-                icon = icon.resize((16, 16))  # Resize to appropriate icon size
+                icon = icon.resize((16, 16))                # Resize to appropriate icon size
                 self.icon_image = ImageTk.PhotoImage(icon)  # Store the reference in the instance
                 self.root.iconphoto(True, self.icon_image)  # Set the icon
             except Exception as e:
                 pass
+
 
     #####################################
     # Highlight syntax
@@ -401,7 +420,7 @@ class HTMLEditor:
             css_property_pattern = r"[\w-]+(?=\s*:)"                    # Matches CSS properties
 
             # JavaScript patterns
-            javascript_function_pattern = r"\b\w+(?=\s*\()"             # Matches functions
+            javascript_function_pattern = r"\b\w+\(\s*\)"             # Matches functions
             javascript_variable_pattern = r"\b(var|let|const)\s+(\w+)"  # Matches variables
             javascript_keyword_pattern = r"(?<![a-zA-Z0-9_])\b(var|let|const|function|if|else|for|while|return|switch|case|break|continue|try|catch|finally|async|await|import|export|class|extends|super|this|new|delete|instanceof|typeof|void|with|do|in|of|default|static|get|set|yield|throw|true|false|null|undefined)\b(?![a-zA-Z0-9_])" #Matches keywords
 
@@ -524,17 +543,17 @@ class HTMLEditor:
                 self.text_area.tag_config("px_value", foreground="#ffcc00")  # Yellow orange
 
             if self.mode == "light":
-                self.text_area.tag_config("html_tag", foreground="#003399")  # Dark blue
+                self.text_area.tag_config("html_tag", foreground="#31a2e4")  # Dark blue
                 self.text_area.tag_config("html_comment", foreground="#008000")  # Green
                 self.text_area.tag_config("js_comment", foreground="#008000")  # Green
-                self.text_area.tag_config("css_class", foreground="#800080")  # Purple
-                self.text_area.tag_config("css_property", foreground="#003399")  # Dark blue
-                self.text_area.tag_config("javascript_function", foreground="#ff8c00")  # Dark orange
-                self.text_area.tag_config("javascript_variable", foreground="#0000ff")  # Blue
+                self.text_area.tag_config("css_class", foreground="#ca32ca")  # Purple
+                self.text_area.tag_config("css_property", foreground="#ac00fc")  # Dark blue
+                self.text_area.tag_config("javascript_function", foreground="#ff5e00")  # Dark orange
+                self.text_area.tag_config("javascript_variable", foreground="#19d677")  # Blue
                 self.text_area.tag_config("javascript_keyword", foreground="#ff0000")  # Red
                 self.text_area.tag_config("string_literal", foreground="#cc6600")  # Brown
-                self.text_area.tag_config("integer", foreground="#0000ff")  # Blue
-                self.text_area.tag_config("px_value", foreground="#0000ff")  # Blue
+                self.text_area.tag_config("integer", foreground="#1dbb2a")  # Blue
+                self.text_area.tag_config("px_value", foreground="#1dbb2a")  # Blue
 
             if self.mode == "high_contrast":
                 self.text_area.tag_config("html_tag", foreground="#66e0ff")  # Light
@@ -550,14 +569,14 @@ class HTMLEditor:
                 self.text_area.tag_config("px_value", foreground="#ffcc00")  # Yellow orange
 
             if self.mode == "black_white":
-                self.text_area.tag_config("html_tag", foreground="#666666")
-                self.text_area.tag_config("html_comment", foreground="#000000")
-                self.text_area.tag_config("js_comment", foreground="#000000")
+                self.text_area.tag_config("html_tag", foreground="#969696")
+                self.text_area.tag_config("html_comment", foreground="#585858")
+                self.text_area.tag_config("js_comment", foreground="#666666")
                 self.text_area.tag_config("css_class", foreground="#666666")
-                self.text_area.tag_config("css_property", foreground="#666666")
-                self.text_area.tag_config("javascript_function", foreground="#666666")
-                self.text_area.tag_config("javascript_variable", foreground="#666666")
-                self.text_area.tag_config("javascript_keyword", foreground="#666666")
+                self.text_area.tag_config("css_property", foreground="#808080")
+                self.text_area.tag_config("javascript_function", foreground="#808080")
+                self.text_area.tag_config("javascript_variable", foreground="#808080")
+                self.text_area.tag_config("javascript_keyword", foreground="#808080")
                 self.text_area.tag_config("string_literal", foreground="#000000")
                 self.text_area.tag_config("integer", foreground="#000000")
                 self.text_area.tag_config("px_value", foreground="#000000")
@@ -691,14 +710,13 @@ class HTMLEditor:
         self.text_area.insert(cursor_index, html_template)
 
     def open_template(self):
-        """Copies a template file into the editor."""
+        """Copies a template file into the editor. GUI is using a new concept for creating buttons that should be more efficient"""
         top = Toplevel(self.root)
         top.title("Open Template")
         top.geometry("400x300")
         top.config(bg="#333333")
         top.resizable(False, False)
 
-        # Add a title label
         title_label = Label(
             top,
             text="Select a Template",
@@ -708,10 +726,8 @@ class HTMLEditor:
         )
         title_label.pack(pady=10)
 
-        # Add a separator for visual clarity
         ttk.Separator(top, orient="horizontal").pack(fill="x", padx=10, pady=5)
 
-        # Create a frame to hold the template buttons
         button_frame = Frame(top, bg="#333333")
         button_frame.pack(pady=10, padx=10, fill="both", expand=True)
 
@@ -800,13 +816,6 @@ class HTMLEditor:
             file_path = filedialog.asksaveasfilename(
                 defaultextension=".html",
                 filetypes=[
-                    ("All supported filetypes", "*.html"),
-                    ("All supported filetypes", "*.htm"),
-                    ("All supported filetypes", "*.css"),
-                    ("All supported filetypes", "*.js"),
-                    ("All supported filetypes", "*.md"),
-                    ("All supported filetypes", "*.txt"),
-
                     ("HTML Sites", "*.html"),
                     ("HTML Sites", "*.htm"),
                     ("Cascading Style Sheets", "*.css"),
@@ -918,11 +927,17 @@ class HTMLEditor:
     def change_zoom(self):
         """Creates a window to change the font size (zoom)"""
         top = Toplevel(self.root)
-        top.geometry("300x100")
-        top.title("Change Font Size")
-        Label(top, text="Font Size:").pack()
+        top.geometry("300x120")
+        top.config(bg="#333333")
+        top.title("Adjust zoom")
+        top.resizable(False, False)
+        Label(top, text="Adjust zoom", font=("TkDefaultFont", 11,"bold"), fg="#FFFFFF", bg="#333333").pack()
         self.slider = Scale(
             top,
+            bg="#333333",
+            fg="#FFFFFF",
+            relief="flat",
+            highlightthickness=0,
             from_=1,
             to=100,
             length=300,
@@ -931,8 +946,7 @@ class HTMLEditor:
         )
         self.slider.set(13)
         self.slider.pack()
-        Button(top, text="Close", command=top.destroy).pack()
-
+        Button(top, text="Close", relief="flat", fg="#FFFFFF", bg="#ff0000", command=top.destroy).pack(pady=10)
     def update_zoom(self, value):
         """Updates the font size (zoom) of the text area"""
         self.text_area.config(font=("Consolas", int(value)))
@@ -959,7 +973,7 @@ class HTMLEditor:
         """Creates a window with information about the application"""
         top = Toplevel(self.root)
         top.title("About")
-        top.geometry("300x150")
+        top.geometry("300x170")
         top.config(bg="#333333")
         top.resizable(False, False)
 
@@ -972,18 +986,18 @@ class HTMLEditor:
             logo_label.image = self.logo_image  # Keep a reference to avoid garbage collection
             logo_label.pack()
         except Exception as e:
-            Label(top, text="Logo not available in new window", fg="#ffffff", bg="#333333").pack()
+            Label(top, text="Logo not available", fg="#ffffff", bg="#333333").pack()
 
-        Label(top, text="HTML Editor", fg="#ffffff", bg="#333333").pack()
+        Label(top, text="HTML Editor", font=("TkDefaultFont", 15, "bold"),fg="#ffffff", bg="#333333").pack(pady=5)
         Label(top, text="Version 1.0", fg="#ffffff", bg="#333333").pack()
-        Label(top, text="Copyright 2024-2025", fg="#ffffff", bg="#333333").pack()
+        Label(top, text="Copyright (c) 2024-2025", fg="#ffffff", bg="#333333").pack()
         Label(top, text="Author: Tobias Kisling", fg="#ffffff", bg="#333333").pack()
 
     def license_window(self):
         """Creates a toplevel window with the license"""
         top = Toplevel(self.root)
         top.title("License")
-        top.geometry("600x600")
+        top.geometry("600x400")
         top.config(bg="#333333")
         top.resizable(False, False)
 
@@ -1031,193 +1045,238 @@ class HTMLEditor:
         """Creates a toplevel window with settings"""
         top = Toplevel(self.root)
         top.title("Settings")
-        top.geometry("600x700")
+        top.geometry("440x500")
         top.config(bg="#333333")
         top.resizable(False, True)
 
+        canvas = Canvas(top, bg="#333333", highlightthickness=0)
+        scrollable_frame = Frame(canvas, bg="#333333")
+
+        # Configure scroll
+        scrollable_frame.bind("<Configure>",lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.pack(side="left", fill="both", expand=True)
+
+        # Handle mouse wheel scrolling
+        def on_mousewheel(event):
+            canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+
+        # Scroll up/down
+        def on_arrow_up(event):
+            canvas.yview_scroll(-1, "units")
+        def on_arrow_down(event):
+            canvas.yview_scroll(1, "units")
+
+        # Bind mouse scroll wheel and arrow keys to the canvas
+        mousewheel_binding = canvas.bind_all("<MouseWheel>", on_mousewheel)
+        canvas.bind_all("<Up>", on_arrow_up)
+        canvas.bind_all("<Down>", on_arrow_down)
+
+        # When settings window is closed, unbind all inputs from the window to prevent errors
+        def on_close():
+            canvas.unbind_all("<MouseWheel>")
+            canvas.unbind_all("<Up>")
+            canvas.unbind_all("<Down>")
+            top.destroy()
+
+        # Bind close event to on_close function
+        top.protocol("WM_DELETE_WINDOW", on_close)
+
         Label(
-            top,
+            scrollable_frame,
             text="Settings",
-            font=("TkDefaultFont", 20),
+            font=("TkDefaultFont", 20, "bold"),
             fg="#ffffff",
             bg="#333333",
         ).pack(pady=10, anchor="center")
 
-        ttk.Separator(top, orient="horizontal").pack(fill="x", padx=10, pady=10)
+        ttk.Separator(scrollable_frame, orient="horizontal").pack(fill="x", padx=10, pady=10)
 
         Label(
-            top,
+            scrollable_frame,
             text="Appearance",
-            font=("TkDefaultFont", 15),
+            font=("TkDefaultFont", 15, "bold"),
             fg="#ffffff",
             bg="#333333",
         ).pack(anchor="center")
 
-        button_frame1 = Frame(top, width=200, height=20, bg="#333333")
+        button_frame1 = Frame(scrollable_frame, width=200, height=20, bg="#333333")
         button_frame1.pack(pady=10)
 
         Button(
             button_frame1,
+            relief="flat",
             text="Light mode",
             font=("TkDefaultFont"),
-            fg="#ffffff",
-            bg="#333333",
+            fg="#333333",
+            bg="#fafafa",
             command=self.change_to_light_mode,
         ).pack(side=LEFT, padx=5)
         Button(
             button_frame1,
             text="Dark mode",
+            relief="flat",
             font=("TkDefaultFont"),
             fg="#ffffff",
-            bg="#333333",
+            bg="#7c7c7c",
             command=self.change_to_dark_mode,
         ).pack(side=LEFT, padx=5)
         Button(
             button_frame1,
             text="High contrast mode",
+            relief="flat",
             font=("TkDefaultFont"),
             fg="#ffffff",
-            bg="#333333",
+            bg="#5c5858",
             command=self.change_to_high_contrast_mode,
         ).pack(side=LEFT, padx=5)
         Button(
             button_frame1,
             text="Black/White mode",
+            relief="flat",
             font=("TkDefaultFont"),
-            fg="#ffffff",
-            bg="#333333",
+            fg="#000000",
+            bg="#ffffff",
             command=self.change_to_black_white_mode,
         ).pack(side=LEFT, padx=5)
 
-        ttk.Separator(top, orient="horizontal").pack(fill="x", padx=10, pady=10)
+        ttk.Separator(scrollable_frame, orient="horizontal").pack(fill="x", padx=10, pady=10)
 
         Label(
-            top,
+            scrollable_frame,
             text="Safe Mode",
-            font=("TkDefaultFont", 15),
+            font=("TkDefaultFont", 15, "bold"),
             fg="#ffffff",
             bg="#333333",
         ).pack(anchor="center")
         Label(
-            top,
+            scrollable_frame,
             text="When safe mode is activated, the current document\ncannot be edited. This mode is intended for safe code browsing.\nPlease note that when this mode is activated, other documents cannot be opened\nuntil safe mode is disabled again.",
             font=("TkDefaultFont"),
             fg="#ffffff",
             bg="#333333",
         ).pack(anchor="center")
 
-        button_frame2 = Frame(top, width=200, height=20, bg="#333333")
+        button_frame2 = Frame(scrollable_frame, width=200, height=20, bg="#333333")
         button_frame2.pack(pady=10)
 
         Button(
             button_frame2,
             text="Toggle Safe Mode",
+            relief="flat",
             bg="#ffcc00",
             fg="#000000",
             command=self.toggle_safe_mode,
         ).pack(side=LEFT, padx=5)
 
-        ttk.Separator(top, orient="horizontal").pack(fill="x", padx=10, pady=10)
+        ttk.Separator(scrollable_frame, orient="horizontal").pack(fill="x", padx=10, pady=10)
 
         Label(
-            top,
+            scrollable_frame,
             text="Auto Save",
-            font=("TkDefaultFont", 15),
+            font=("TkDefaultFont", 15, "bold"),
             fg="#ffffff",
             bg="#333333",
         ).pack(anchor="center")
         Label(
-            top,
+            scrollable_frame,
             text=" When auto save is activated, the current document\nis saved every 10 seconds.",
             font=("TkDefaultFont"),
             fg="#ffffff",
             bg="#333333",
         ).pack(anchor="center")
 
-        button_frame3 = Frame(top, width=200, height=20, bg="#333333")
+        button_frame3 = Frame(scrollable_frame, width=200, height=20, bg="#333333")
         button_frame3.pack(pady=10)
 
         Button(
-            top,
+            button_frame3,
+            relief="flat",
             text="Toggle Auto Save",
             bg="#0099cc",
             fg="#f0f0f0",
             command=self.toggle_auto_save,
         ).pack(pady=10)
 
-        ttk.Separator(top, orient="horizontal").pack(fill="x", padx=10, pady=10)
+        ttk.Separator(scrollable_frame, orient="horizontal").pack(fill="x", padx=10, pady=10)
 
         Label(
-            top,
-            text="Tag completition",
-            font=("TkDefaultFont", 15),
+            scrollable_frame,
+            text="Tag completion",
+            font=("TkDefaultFont", 15, "bold"),
             fg="#ffffff",
             bg="#333333",
         ).pack(anchor="center")
 
-        button_frame4 = Frame(top, width=200, height=20, bg="#333333")
+        button_frame4 = Frame(scrollable_frame, width=200, height=20, bg="#333333")
         button_frame4.pack(pady=10)
 
         Button(
             button_frame4,
+            relief="flat",
             text="Toggle Tag Completion",
             font=("TkDefaultFont"),
-            fg="#ffffff",
-            bg="#333333",
+            fg="#000000",
+            bg="#ff9100",
             command=self.toggle_tag_completion,
         ).pack(side=LEFT, padx=5)
 
-        ttk.Separator(top, orient="horizontal").pack(fill="x", padx=10, pady=10)
+        ttk.Separator(scrollable_frame, orient="horizontal").pack(fill="x", padx=10, pady=10)
 
         Label(
-            top,
+            scrollable_frame,
             text="Templates",
-            font=("TkDefaultFont", 15),
+            font=("TkDefaultFont", 15, "bold"),
             fg="#ffffff",
             bg="#333333",
         ).pack(anchor="center")
 
-        button_frame5 = Frame(top, width=200, height=20, bg="#333333")
+        button_frame5 = Frame(scrollable_frame, width=200, height=20, bg="#333333")
         button_frame5.pack(pady=10)
 
         Button(
             button_frame5,
-            text="Open template",
+            relief="flat",
+            text="Open template chooser",
             font=("TkDefaultFont"),
             fg="#ffffff",
-            bg="#333333",
+            bg="#ff0000",
             command=self.open_template,
         ).pack(side=LEFT, padx=5)
 
-        ttk.Separator(top, orient="horizontal").pack(fill="x", padx=10, pady=10)
+        ttk.Separator(scrollable_frame, orient="horizontal").pack(fill="x", padx=10, pady=10)
 
         Label(
-            top,
+            scrollable_frame,
             text="About and licensing",
-            font=("TkDefaultFont", 15),
+            font=("TkDefaultFont", 15, "bold"),
             fg="#ffffff",
             bg="#333333",
         ).pack(anchor="center")
 
-        button_frame6 = Frame(top, width=200, height=20, bg="#333333")
+        button_frame6 = Frame(scrollable_frame, width=200, height=20, bg="#333333")
         button_frame6.pack(pady=10)
-        
+
         Button(
             button_frame6,
+            relief="flat",
             text="About HTML editor",
             font=("TkDefaultFont"),
-            fg="#ffffff",
-            bg="#333333",
+            fg="#000000",
+            bg="#ffd900",
             command=self.info_window,
         ).pack(side=LEFT, padx=5)
         Button(
             button_frame6,
+            relief="flat",
             text="Show license",
             font=("TkDefaultFont"),
-            fg="#ffffff",
-            bg="#333333",
+            fg="#000000",
+            bg="#ffd900",
             command=self.license_window,
         ).pack(side=LEFT, padx=5)
+
 
     #####################################
     # Find/Replace
@@ -1305,6 +1364,7 @@ class HTMLEditor:
             find_replace_window,
             text="Find and Replace",
             command=perform_find_replace,
+            relief="flat",
             bg="#0099cc",
             fg="#ffffff",
         )
@@ -1332,14 +1392,15 @@ class HTMLEditor:
         self.text_area.config(bg="#ffffff", fg="#000000", insertbackground="#000000")
 
         # Menu area button colors
-        self.infoButton.config(bg="#ffff00", fg="#4d4d4d")
-        self.saveAsButton.config(bg="#3366cc", fg="#f0f0f0")
-        self.saveButton.config(bg="#3366cc", fg="#f0f0f0")
-        self.openButton.config(bg="#ff0066", fg="#f0f0f0")
-        self.runButton.config(bg="#ff6600")
-        self.viewButton.config(bg="#339933")
-        self.frButton.config(bg="#ff33cc")
-        self.settingsbutton.config(bg="#333333", fg="#f0f0f0")
+        self.infoButton.config(bg="#ffa600", fg="#000000")
+        self.newButton.config(bg="#f0f0f0", fg="#757575")
+        self.saveAsButton.config(bg="#f0f0f0", fg="#757575")
+        self.saveButton.config(bg="#f0f0f0", fg="#757575")
+        self.openButton.config(bg="#f0f0f0", fg="#757575")
+        self.runButton.config(bg="#f0f0f0", fg="#757575")
+        self.viewButton.config(bg="#f0f0f0", fg="#757575")
+        self.frButton.config(bg="#f0f0f0", fg="#757575")
+        self.settingsbutton.config(bg="#f0f0f0", fg="#757575")
 
     def change_to_dark_mode(self):
         """Changes to dark mode"""
@@ -1349,14 +1410,15 @@ class HTMLEditor:
         self.text_area.config(bg="#333333", fg="#f0f0f0", insertbackground="#f0f0f0")
 
         # Menu area button colors
-        self.infoButton.config(bg="#ffff00", fg="#4d4d4d")
-        self.saveAsButton.config(bg="#3366cc", fg="#f0f0f0")
-        self.saveButton.config(bg="#3366cc", fg="#f0f0f0")
-        self.openButton.config(bg="#ff0066", fg="#f0f0f0")
-        self.runButton.config(bg="#ff6600")
-        self.viewButton.config(bg="#339933")
-        self.frButton.config(bg="#ff33cc")
-        self.settingsbutton.config(bg="#333333", fg="#f0f0f0")
+        self.infoButton.config(bg="#ffa600", fg="#000000")
+        self.newButton.config(bg="#757575", fg="#f0f0f0")
+        self.saveAsButton.config(bg="#757575", fg="#f0f0f0")
+        self.saveButton.config(bg="#757575", fg="#f0f0f0")
+        self.openButton.config(bg="#757575", fg="#f0f0f0")
+        self.runButton.config(bg="#757575", fg="#f0f0f0")
+        self.viewButton.config(bg="#757575", fg="#f0f0f0")
+        self.frButton.config(bg="#757575", fg="#f0f0f0")
+        self.settingsbutton.config(bg="#757575", fg="#f0f0f0")
 
     def change_to_high_contrast_mode(self):
         """Changes to high contrast mode"""
@@ -1366,14 +1428,15 @@ class HTMLEditor:
         self.text_area.config(bg="#000000", fg="#ffffff", insertbackground="#ffffff")
 
         # Menu area button colors
-        self.infoButton.config(bg="#ffffff", fg="#000000")
-        self.saveAsButton.config(bg="#3366cc", fg="#ffffff")
-        self.saveButton.config(bg="#3366cc", fg="#ffffff")
-        self.openButton.config(bg="#ff0066", fg="#ffffff")
-        self.runButton.config(bg="#ff6600")
-        self.viewButton.config(bg="#00ff00")
-        self.frButton.config(bg="#ff33cc")
-        self.settingsbutton.config(bg="#333333", fg="#f0f0f0")
+        self.infoButton.config(bg="#ffc861", fg="#000000")
+        self.newButton.config(bg="#757575", fg="#f0f0f0")
+        self.saveAsButton.config(bg="#757575", fg="#f0f0f0")
+        self.saveButton.config(bg="#757575", fg="#f0f0f0")
+        self.openButton.config(bg="#757575", fg="#f0f0f0")
+        self.runButton.config(bg="#757575", fg="#f0f0f0")
+        self.viewButton.config(bg="#757575", fg="#f0f0f0")
+        self.frButton.config(bg="#757575", fg="#f0f0f0")
+        self.settingsbutton.config(bg="#757575", fg="#f0f0f0")
 
     def change_to_black_white_mode(self):
         """Changes to black and white mode"""
@@ -1384,13 +1447,14 @@ class HTMLEditor:
 
         # Menu area button colors
         self.infoButton.config(bg="#ffffff", fg="#000000")
-        self.saveAsButton.config(bg="#ffffff", fg="#000000")
-        self.saveButton.config(bg="#ffffff", fg="#000000")
-        self.openButton.config(bg="#ffffff", fg="#000000")
-        self.runButton.config(bg="#ffffff", fg="#000000")
-        self.viewButton.config(bg="#ffffff", fg="#000000")
-        self.frButton.config(bg="#ffffff", fg="#000000")
-        self.settingsbutton.config(bg="#ffffff", fg="#000000")
+        self.newButton.config(bg="#757575", fg="#f0f0f0")
+        self.saveAsButton.config(bg="#757575", fg="#f0f0f0")
+        self.saveButton.config(bg="#757575", fg="#f0f0f0")
+        self.openButton.config(bg="#757575", fg="#f0f0f0")
+        self.runButton.config(bg="#757575", fg="#f0f0f0")
+        self.viewButton.config(bg="#757575", fg="#f0f0f0")
+        self.frButton.config(bg="#757575", fg="#f0f0f0")
+        self.settingsbutton.config(bg="#757575", fg="#f0f0f0")
 
 
     #####################################
@@ -1412,6 +1476,7 @@ class HTMLEditor:
         if self.after_id:
             self.root.after_cancel(self.after_id)  # Cancel the scheduled after call
         self.root.destroy()  # Close the window
+
 
 #####################################
 # Init main class

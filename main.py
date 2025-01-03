@@ -997,7 +997,7 @@ class HTMLEditor:
             self.logo_image = ImageTk.PhotoImage(logo)  # Store the reference in the instance
             logo_label = Label(top, image=self.logo_image)
             logo_label.image = self.logo_image  # Keep a reference to avoid garbage collection
-            logo_label.pack()
+            logo_label.pack(pady=5)
         except Exception as e:
             Label(top, text="Logo not available", fg="#ffffff", bg="#333333").pack()
 

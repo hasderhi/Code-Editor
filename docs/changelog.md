@@ -60,7 +60,7 @@
 - Change: Organized the repo
 - Change: Rewrote the readme/docs to include the changes from v1.0.7
 
-### 1.0.9
+### 1.0.9 (latest release)
 
 - Change: Improved the GUI of the main, settings, zoom and find/replace window
 - Change: Fixed an issue with the syntax higlighting function marking code as function that was not a function

@@ -77,6 +77,7 @@ In the settings, you can switch between 4 themes:
 3. High contrast mode
 ![The editor in high contrast mode](assets/highcontrastmode.png)
 4. Black/White Mode
+![The editor in black/white mode](assets/bwmode.png)
 
 ## Additional information
 

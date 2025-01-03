@@ -57,21 +57,62 @@
                 text-align: left;
             }
         }
-    
+        .menu-icon {
+            display: none;
+            font-size: 24px;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .nav-links {
+            display: flex;
+        }
+
+        @media (max-width: 768px) {
+            .menu-icon {
+                display: block;
+            }
+
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+        }
         .container {
             padding: 20px;
             max-width: 1200px;
             margin: 0 auto;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
         }
     
         h1 {
             font-size: 2.5rem;
             margin-bottom: 20px;
         }
-    
+
         p {
             font-size: 1.1rem;
             margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            p {
+                font-size: 1rem;
+            }
         }
     
         footer {
@@ -85,13 +126,18 @@
         footer p {
             margin: 0;
         }
+        img {
+            max-width: 100%;
+            height: auto;
+    	}
     </style>
 </head>
 <body>
     <!-- Navigation Bar -->
     <div class="topnav">
         <div class="logo">MyWebsite</div>
-        <div>
+        <div class="menu-icon" onclick="toggleMenu()">&#9776;</div>
+        <div class="nav-links" id="navLinks">
             <a href="#home">Home</a>
             <a href="#about">About</a>
             <a href="#services">Services</a>
@@ -110,6 +156,11 @@
     <footer>
         <p>&copy; 2025 MyWebsite. All rights reserved.</p>
     </footer>
-
+    <script>
+        function toggleMenu() {
+            const navLinks = document.getElementById("navLinks");
+            navLinks.classList.toggle("active");
+        }
+    </script>
 </body>
 </html>

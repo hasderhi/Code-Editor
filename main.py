@@ -435,6 +435,28 @@ class HTMLEditor:
             # px value pattern (not in a string and not in an HTML tag)
             px_value_pattern = (r'(?<![<"\'])\b\d+px\b(?![>\'"])')  # Matches numerals followed by 'px'
 
+            # HTML comments
+            for match in re.finditer(html_comment_pattern, content):
+                self.text_area.tag_add(
+                    "html_comment",
+                    f"1.0 + {match.start()} chars",
+                    f"1.0 + {match.end()} chars",
+                )
+
+            # JavaScript comments
+            for match in re.finditer(r"//.*?$", content, re.MULTILINE):
+                start_index = match.start()
+                if (
+                    not content[max(0, start_index - 7) : start_index]
+                    .strip()
+                    .endswith(("http:", "https:"))
+                ):
+                    self.text_area.tag_add(
+                        "js_comment",
+                        f"1.0 + {match.start()} chars",
+                        f"1.0 + {match.end()} chars",
+                    )
+
             # HTML tags
             for match in re.finditer(html_tag_pattern, content):
                 self.text_area.tag_add(
@@ -515,27 +537,7 @@ class HTMLEditor:
                     f"1.0 + {match.end()} chars",
                 )
 
-            # HTML comments
-            for match in re.finditer(html_comment_pattern, content):
-                self.text_area.tag_add(
-                    "html_comment",
-                    f"1.0 + {match.start()} chars",
-                    f"1.0 + {match.end()} chars",
-                )
 
-            # JavaScript comments
-            for match in re.finditer(r"//.*?$", content, re.MULTILINE):
-                start_index = match.start()
-                if (
-                    not content[max(0, start_index - 7) : start_index]
-                    .strip()
-                    .endswith(("http:", "https:"))
-                ):
-                    self.text_area.tag_add(
-                        "js_comment",
-                        f"1.0 + {match.start()} chars",
-                        f"1.0 + {match.end()} chars",
-                    )
 
             # Configure tag colors (Edit this to change colors to your needs)
             if self.mode == "dark":
@@ -959,7 +961,7 @@ class HTMLEditor:
         )
         self.slider.set(13)
         self.slider.pack()
-        Button(top, text="Close", relief="flat", fg="#FFFFFF", bg="#ff0000", command=top.destroy).pack(pady=10)
+        Button(top, text="Close", relief="flat", fg="#FFFFFF", bg="#ff0066", command=top.destroy).pack(pady=10)
     def update_zoom(self, value):
         """Updates the font size (zoom) of the text area"""
         self.text_area.config(font=("Consolas", int(value)))

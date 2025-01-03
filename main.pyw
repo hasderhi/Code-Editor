@@ -26,6 +26,7 @@ try:
     import sys
     import os
     import webbrowser
+    import time
 
     if os.name == "nt":  # If system is win32, import ctypes and set flag to true
         import ctypes
@@ -68,6 +69,9 @@ class HTMLEditor:
     def init():
         "Starter function of the editor."
         root = Tk()
+
+        root.config(cursor="watch")
+
         editor = HTMLEditor(root)
         root.protocol("WM_DELETE_WINDOW", editor.confirm_exit)  # Bind close event
         root.mainloop()
@@ -75,6 +79,7 @@ class HTMLEditor:
     def __init__(self, root):
         "Main init function of the editor"
         self.root = root
+        root.config(cursor="")
         self.root.title(f"HTML Editor - Untitled Document")  # Default
         self.root.geometry("850x600")
         self.root.config(bg="#2B2B2B")
@@ -143,7 +148,7 @@ class HTMLEditor:
         self.root.bind(
             '"', lambda event: self.complete_string(event)
         )  # Bind '"' key for string completion
-        
+
 
         #####################################
         # Init widgets, set up text area
@@ -284,11 +289,14 @@ class HTMLEditor:
 
         font = tkfont.Font(font=self.text_area["font"])
         tab_size = font.measure("   ")  # Edit this to change tab size to your needs
-        self.text_area.config(tabs=tab_size)
+        self.text_area.config(tabs=tab_size, selectbackground="#116891", inactiveselectbackground="#719cc4")
         self.text_area.bind("<<Modified>>", self.on_text_change)  # Track changes
 
         self.update_syntax_highlighting()  # Init syntax highlighting
         self.auto_save() # Init auto save (Not active until toggled)
+
+        root.config(cursor="")
+
 
     def set_icon(self):
         """Sets the application icon."""
@@ -412,8 +420,10 @@ class HTMLEditor:
         else:
             # Regex patterns for HTML, CSS, and JavaScript
 
+            declared_variables = set()
+
             # HTML patterns
-            html_tag_pattern = r"</?[\w\s=\"\'\-\/]*[^<>]*\/?>"         # Matches HTML tags
+            html_tag_pattern = r"</?[\w][\w\-\/]*[^<>]*\/?>"         # Matches HTML tags
             html_comment_pattern = r"<!--.*?-->"                        # Matches HTML comments
 
             # CSS patterns
@@ -421,10 +431,11 @@ class HTMLEditor:
             css_property_pattern = r"[\w-]+(?=\s*:)"                    # Matches CSS properties
 
             # JavaScript patterns
-            javascript_function_pattern = r"\b\w+\(\s*\)"             # Matches functions
-            javascript_variable_pattern = r"\b(var|let|const)\s+(\w+)"  # Matches variables
+            javascript_function_pattern = r"\b\w+\(\s*.*?\s*\)"             # Matches functions
+            javascript_variable_pattern = r"\b(var|let|const)\s+(\w+)"      # Matches variables
             javascript_keyword_pattern = r"(?<![a-zA-Z0-9_])\b(var|let|const|function|if|else|for|while|return|switch|case|break|continue|try|catch|finally|async|await|import|export|class|extends|super|this|new|delete|instanceof|typeof|void|with|do|in|of|default|static|get|set|yield|throw|true|false|null|undefined)\b(?![a-zA-Z0-9_])" #Matches keywords
             javascript_builtin_pattern = r"\b(console|Math|Array|String|Object|Number|Date|Promise|JSON|Set|Map|RegExp|Error|Symbol|Function|Boolean|parseInt|parseFloat|isNaN|isFinite|eval|encodeURI|decodeURI|encodeURIComponent|decodeURIComponent)\b"  # Matches built-ins
+            javascript_dom_function_pattern = r"\b(document|window)\.(getElementsByClassName|getElementById|getElementsByName|getElementsByTagName|querySelector|querySelectorAll|innerHTML|outerHTML|textContent|style|addEventListener|removeEventListener|dispatchEvent|createElement|createDocumentFragment|createTextNode|appendChild|insertBefore|replaceChild|removeChild|cloneNode|appendChild|insertAdjacentHTML|insertAdjacentText)\b"
 
             # String literal pattern
             string_literal_pattern = r'(["\'])(?:(?=(\\?))\2.)*?\1'  # Matches strings in double or single quotes
@@ -434,6 +445,31 @@ class HTMLEditor:
 
             # px value pattern (not in a string and not in an HTML tag)
             px_value_pattern = (r'(?<![<"\'])\b\d+px\b(?![>\'"])')  # Matches numerals followed by 'px'
+
+            # Operator and brace pattern
+            operator_pattern = r"[+\-<>\=\(\)\{\}\[\]\*\%\|]"
+
+            # HTML comments
+            for match in re.finditer(html_comment_pattern, content):
+                self.text_area.tag_add(
+                    "html_comment",
+                    f"1.0 + {match.start()} chars",
+                    f"1.0 + {match.end()} chars",
+                )
+
+            # JavaScript comments
+            for match in re.finditer(r"//.*?$", content, re.MULTILINE):
+                start_index = match.start()
+                if (
+                    not content[max(0, start_index - 7) : start_index]
+                    .strip()
+                    .endswith(("http:", "https:"))
+                ):
+                    self.text_area.tag_add(
+                        "js_comment",
+                        f"1.0 + {match.start()} chars",
+                        f"1.0 + {match.end()} chars",
+                    )
 
             # HTML tags
             for match in re.finditer(html_tag_pattern, content):
@@ -469,11 +505,23 @@ class HTMLEditor:
 
             # JavaScript variables
             for match in re.finditer(javascript_variable_pattern, content):
+                variable_name = match.group(2)
+                declared_variables.add(variable_name)  # Store the variable name
                 self.text_area.tag_add(
                     "javascript_variable",
                     f"1.0 + {match.start(2)} chars",
                     f"1.0 + {match.end(2)} chars",
                 )
+
+            # Highlight variables later in the code
+            for variable_name in declared_variables:
+                variable_usage_pattern = rf"\b{variable_name}(?![\w\.])"  # Matches the variable name  # Matches the variable name
+                for match in re.finditer(variable_usage_pattern, content):
+                    self.text_area.tag_add(
+                        "javascript_variable",
+                        f"1.0 + {match.start()} chars",
+                        f"1.0 + {match.end()} chars",
+                    )
 
             # JavaScript keywords
             for match in re.finditer(javascript_keyword_pattern, content):
@@ -487,6 +535,14 @@ class HTMLEditor:
             for match in re.finditer(javascript_builtin_pattern, content):
                 self.text_area.tag_add(
                     "javascript_builtin",
+                    f"1.0 + {match.start()} chars",
+                    f"1.0 + {match.end()} chars",
+                )
+
+            # JavaScript DOM functions
+            for match in re.finditer(javascript_dom_function_pattern, content):
+                self.text_area.tag_add(
+                    "javascript_dom_function",
                     f"1.0 + {match.start()} chars",
                     f"1.0 + {match.end()} chars",
                 )
@@ -515,84 +571,78 @@ class HTMLEditor:
                     f"1.0 + {match.end()} chars",
                 )
 
-            # HTML comments
-            for match in re.finditer(html_comment_pattern, content):
+            # Operators
+            for match in re.finditer(operator_pattern, content):
                 self.text_area.tag_add(
-                    "html_comment",
+                    "operator",
                     f"1.0 + {match.start()} chars",
                     f"1.0 + {match.end()} chars",
                 )
 
-            # JavaScript comments
-            for match in re.finditer(r"//.*?$", content, re.MULTILINE):
-                start_index = match.start()
-                if (
-                    not content[max(0, start_index - 7) : start_index]
-                    .strip()
-                    .endswith(("http:", "https:"))
-                ):
-                    self.text_area.tag_add(
-                        "js_comment",
-                        f"1.0 + {match.start()} chars",
-                        f"1.0 + {match.end()} chars",
-                    )
-
             # Configure tag colors (Edit this to change colors to your needs)
             if self.mode == "dark":
-                self.text_area.tag_config("html_tag", foreground="#66e0ff")  # Light blue
-                self.text_area.tag_config("html_comment", foreground="#009900")  # Dark green
-                self.text_area.tag_config("js_comment", foreground="#009900")  # Dark green
-                self.text_area.tag_config("css_class", foreground="#ff00ff")  # Pink
-                self.text_area.tag_config("css_property", foreground="#00ffaa")  # Light green
-                self.text_area.tag_config("javascript_function", foreground="#ffcc00")  # Yellow orange
-                self.text_area.tag_config("javascript_variable", foreground="#00ff00")  # Lime
-                self.text_area.tag_config("javascript_keyword", foreground="#ff0066")  # Red
-                self.text_area.tag_config("javascript_builtin", foreground="#bbff00")  # Dark green
-                self.text_area.tag_config("string_literal", foreground="#ff9933")  # Orange
-                self.text_area.tag_config("integer", foreground="#ffcc00")  # Yellow orange
-                self.text_area.tag_config("px_value", foreground="#ffcc00")  # Yellow orange
+                self.text_area.tag_config("html_tag", foreground="#66e0ff")                 # Light blue
+                self.text_area.tag_config("html_comment", foreground="#009900")             # Dark green
+                self.text_area.tag_config("js_comment", foreground="#009900")               # Dark green
+                self.text_area.tag_config("css_class", foreground="#ff00ff")                # Pink
+                self.text_area.tag_config("css_property", foreground="#00ffaa")             # Light green
+                self.text_area.tag_config("javascript_function", foreground="#ffcc00")      # Yellow orange
+                self.text_area.tag_config("javascript_dom_function", foreground="#ffcc00")  # Yellow orange
+                self.text_area.tag_config("javascript_variable", foreground="#00ff00")      # Lime
+                self.text_area.tag_config("javascript_keyword", foreground="#ff0066")       # Red
+                self.text_area.tag_config("javascript_builtin", foreground="#bbff00")       # Light green
+                self.text_area.tag_config("string_literal", foreground="#ff9933")           # Orange
+                self.text_area.tag_config("integer", foreground="#ffcc00")                  # Yellow orange
+                self.text_area.tag_config("px_value", foreground="#ffcc00")                 # Yellow orange
+                self.text_area.tag_config("operator", foreground="#00a2ff")                 # Lightblue
 
             if self.mode == "light":
-                self.text_area.tag_config("html_tag", foreground="#31a2e4")  # Dark blue
-                self.text_area.tag_config("html_comment", foreground="#008000")  # Green
-                self.text_area.tag_config("js_comment", foreground="#008000")  # Green
-                self.text_area.tag_config("css_class", foreground="#ca32ca")  # Purple
-                self.text_area.tag_config("css_property", foreground="#ac00fc")  # Dark blue
-                self.text_area.tag_config("javascript_function", foreground="#ff5e00")  # Dark orange
-                self.text_area.tag_config("javascript_variable", foreground="#19d677")  # Blue
-                self.text_area.tag_config("javascript_keyword", foreground="#ff0000")  # Red
-                self.text_area.tag_config("javascript_builtin", foreground="#00cc00")  # Dark green
-                self.text_area.tag_config("string_literal", foreground="#cc6600")  # Brown
-                self.text_area.tag_config("integer", foreground="#1dbb2a")  # Blue
-                self.text_area.tag_config("px_value", foreground="#1dbb2a")  # Blue
+                self.text_area.tag_config("html_tag", foreground="#31a2e4")                 # Blue
+                self.text_area.tag_config("html_comment", foreground="#008000")             # Dark green
+                self.text_area.tag_config("js_comment", foreground="#008000")               # Dark green
+                self.text_area.tag_config("css_class", foreground="#ca32ca")                # Pink
+                self.text_area.tag_config("css_property", foreground="#ac00fc")             # Purple
+                self.text_area.tag_config("javascript_function", foreground="#ff5e00")      # Dark orange
+                self.text_area.tag_config("javascript_dom_function", foreground="#ff5e00")  # Dark orange
+                self.text_area.tag_config("javascript_variable", foreground="#19d677")      # Green
+                self.text_area.tag_config("javascript_keyword", foreground="#ff0000")       # Red
+                self.text_area.tag_config("javascript_builtin", foreground="#00cc00")       # Green
+                self.text_area.tag_config("string_literal", foreground="#cc6600")           # Brown
+                self.text_area.tag_config("integer", foreground="#1dbb2a")                  # Green
+                self.text_area.tag_config("px_value", foreground="#1dbb2a")                 # Green
+                self.text_area.tag_config("operator", foreground="#00a2ff")                 # Lightblue
 
             if self.mode == "high_contrast":
-                self.text_area.tag_config("html_tag", foreground="#66e0ff")  # Light
-                self.text_area.tag_config("html_comment", foreground="#009900")  # Dark green
-                self.text_area.tag_config("js_comment", foreground="#009900")  # Dark green
-                self.text_area.tag_config("css_class", foreground="#ff3399")  # Pink
-                self.text_area.tag_config("css_property", foreground="#00ffaa")  # Light green
-                self.text_area.tag_config("javascript_function", foreground="#ffcc00")  # Yellow orange
-                self.text_area.tag_config("javascript_variable", foreground="#00ff00")  # Lime
-                self.text_area.tag_config("javascript_keyword", foreground="#ff0066")  # Red
-                self.text_area.tag_config("javascript_builtin", foreground="#00cc00")  # Dark green
-                self.text_area.tag_config("string_literal", foreground="#ff9933")  # Orange
-                self.text_area.tag_config("integer", foreground="#ffcc00")  # Yellow orange
-                self.text_area.tag_config("px_value", foreground="#ffcc00")  # Yellow orange
+                self.text_area.tag_config("html_tag", foreground="#66e0ff")                 # Light blue
+                self.text_area.tag_config("html_comment", foreground="#009900")             # Dark green
+                self.text_area.tag_config("js_comment", foreground="#009900")               # Dark green
+                self.text_area.tag_config("css_class", foreground="#ff3399")                # Pink
+                self.text_area.tag_config("css_property", foreground="#00ffaa")             # Light green
+                self.text_area.tag_config("javascript_function", foreground="#ffcc00")      # Yellow orange
+                self.text_area.tag_config("javascript_dom_function", foreground="#ffcc00")  # Yellow orange
+                self.text_area.tag_config("javascript_variable", foreground="#00ff00")      # Lime
+                self.text_area.tag_config("javascript_keyword", foreground="#ff0066")       # Red
+                self.text_area.tag_config("javascript_builtin", foreground="#00cc00")       # Dark green
+                self.text_area.tag_config("string_literal", foreground="#ff9933")           # Orange
+                self.text_area.tag_config("integer", foreground="#ffcc00")                  # Yellow orange
+                self.text_area.tag_config("px_value", foreground="#ffcc00")                 # Yellow orange
+                self.text_area.tag_config("operator", foreground="#00a2ff")                 # Lightblue
 
             if self.mode == "black_white":
                 self.text_area.tag_config("html_tag", foreground="#969696")
                 self.text_area.tag_config("html_comment", foreground="#585858")
-                self.text_area.tag_config("js_comment", foreground="#666666")
+                self.text_area.tag_config("js_comment", foreground="#585858")
                 self.text_area.tag_config("css_class", foreground="#666666")
                 self.text_area.tag_config("css_property", foreground="#808080")
                 self.text_area.tag_config("javascript_function", foreground="#808080")
+                self.text_area.tag_config("javascript_dom_function", foreground="#808080")
                 self.text_area.tag_config("javascript_variable", foreground="#808080")
-                self.text_area.tag_config("javascript_keyword", foreground="#808080")
+                self.text_area.tag_config("javascript_keyword", foreground="#505050")
                 self.text_area.tag_config("javascript_builtin", foreground="#808080")
                 self.text_area.tag_config("string_literal", foreground="#000000")
                 self.text_area.tag_config("integer", foreground="#000000")
                 self.text_area.tag_config("px_value", foreground="#000000")
+                self.text_area.tag_config("operator", foreground="#808080")
 
         # Schedule next update
         self.after_id = self.root.after(100, self.update_syntax_highlighting)
@@ -959,7 +1009,7 @@ class HTMLEditor:
         )
         self.slider.set(13)
         self.slider.pack()
-        Button(top, text="Close", relief="flat", fg="#FFFFFF", bg="#ff0000", command=top.destroy).pack(pady=10)
+        Button(top, text="Close", relief="flat", fg="#FFFFFF", bg="#ff0066", command=top.destroy).pack(pady=10)
     def update_zoom(self, value):
         """Updates the font size (zoom) of the text area"""
         self.text_area.config(font=("Consolas", int(value)))
@@ -997,7 +1047,7 @@ class HTMLEditor:
             self.logo_image = ImageTk.PhotoImage(logo)  # Store the reference in the instance
             logo_label = Label(top, image=self.logo_image)
             logo_label.image = self.logo_image  # Keep a reference to avoid garbage collection
-            logo_label.pack()
+            logo_label.pack(pady=5)
         except Exception as e:
             Label(top, text="Logo not available", fg="#ffffff", bg="#333333").pack()
 
@@ -1402,7 +1452,7 @@ class HTMLEditor:
         self.mode = "light"  # Set mode
         # Change root window bg/fg
         self.root.config(bg="#ffffff")
-        self.text_area.config(bg="#ffffff", fg="#000000", insertbackground="#000000")
+        self.text_area.config(bg="#ffffff", fg="#000000", insertbackground="#000000", selectbackground="#6ed1ff", inactiveselectbackground="#afe6ff")
 
         # Menu area button colors
         self.infoButton.config(bg="#ffa600", fg="#000000")
@@ -1420,7 +1470,7 @@ class HTMLEditor:
         self.mode = "dark"  # Set mode
         # Change root window bg/fg
         self.root.config(bg="#2B2B2B")
-        self.text_area.config(bg="#333333", fg="#f0f0f0", insertbackground="#f0f0f0")
+        self.text_area.config(bg="#333333", fg="#f0f0f0", insertbackground="#f0f0f0", selectbackground="#116891", inactiveselectbackground="#719cc4")
 
         # Menu area button colors
         self.infoButton.config(bg="#ffa600", fg="#000000")
@@ -1438,7 +1488,7 @@ class HTMLEditor:
         self.mode = "high_contrast"  # Set mode
         # Change root window bg/fg
         self.root.config(bg="#000000")
-        self.text_area.config(bg="#000000", fg="#ffffff", insertbackground="#ffffff")
+        self.text_area.config(bg="#000000", fg="#ffffff", insertbackground="#ffffff", selectbackground="#0011ff", inactiveselectbackground="#0011ff")
 
         # Menu area button colors
         self.infoButton.config(bg="#ffc861", fg="#000000")
@@ -1456,7 +1506,7 @@ class HTMLEditor:
         self.mode = "black_white"  # Set mode
         # Change root window bg/fg
         self.root.config(bg="#ffffff")
-        self.text_area.config(bg="#ffffff", fg="#000000", insertbackground="#000000")
+        self.text_area.config(bg="#ffffff", fg="#000000", insertbackground="#000000", selectbackground="#6ed1ff", inactiveselectbackground="#afe6ff")
 
         # Menu area button colors
         self.infoButton.config(bg="#ffffff", fg="#000000")

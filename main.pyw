@@ -324,6 +324,7 @@ class HTMLEditor:
         self.text_area.tag_remove("markdown_italic", "1.0", END)
         self.text_area.tag_remove("markdown_link", "1.0", END)
         self.text_area.tag_remove("markdown_list", "1.0", END)
+        self.text_area.tag_remove("javascript_builtin", "1.0", END)
 
         # Get content of text
         content = self.text_area.get("1.0", END)
@@ -416,13 +417,14 @@ class HTMLEditor:
             html_comment_pattern = r"<!--.*?-->"                        # Matches HTML comments
 
             # CSS patterns
-            css_class_pattern = r"\.[\w-]+"                             # Matches CSS classes
+            css_class_pattern = r"(?:^|\s)\.[\w-]+"                     # Matches CSS classes
             css_property_pattern = r"[\w-]+(?=\s*:)"                    # Matches CSS properties
 
             # JavaScript patterns
             javascript_function_pattern = r"\b\w+\(\s*\)"             # Matches functions
             javascript_variable_pattern = r"\b(var|let|const)\s+(\w+)"  # Matches variables
             javascript_keyword_pattern = r"(?<![a-zA-Z0-9_])\b(var|let|const|function|if|else|for|while|return|switch|case|break|continue|try|catch|finally|async|await|import|export|class|extends|super|this|new|delete|instanceof|typeof|void|with|do|in|of|default|static|get|set|yield|throw|true|false|null|undefined)\b(?![a-zA-Z0-9_])" #Matches keywords
+            javascript_builtin_pattern = r"\b(console|Math|Array|String|Object|Number|Date|Promise|JSON|Set|Map|RegExp|Error|Symbol|Function|Boolean|parseInt|parseFloat|isNaN|isFinite|eval|encodeURI|decodeURI|encodeURIComponent|decodeURIComponent)\b"  # Matches built-ins
 
             # String literal pattern
             string_literal_pattern = r'(["\'])(?:(?=(\\?))\2.)*?\1'  # Matches strings in double or single quotes
@@ -440,28 +442,6 @@ class HTMLEditor:
                     f"1.0 + {match.start()} chars",
                     f"1.0 + {match.end()} chars",
                 )
-
-            # HTML comments
-            for match in re.finditer(html_comment_pattern, content):
-                self.text_area.tag_add(
-                    "html_comment",
-                    f"1.0 + {match.start()} chars",
-                    f"1.0 + {match.end()} chars",
-                )
-
-            # JavaScript comments
-            for match in re.finditer(r"//.*?$", content, re.MULTILINE):
-                start_index = match.start()
-                if (
-                    not content[max(0, start_index - 7) : start_index]
-                    .strip()
-                    .endswith(("http:", "https:"))
-                ):
-                    self.text_area.tag_add(
-                        "js_comment",
-                        f"1.0 + {match.start()} chars",
-                        f"1.0 + {match.end()} chars",
-                    )
 
             # CSS classes
             for match in re.finditer(css_class_pattern, content):
@@ -503,6 +483,14 @@ class HTMLEditor:
                     f"1.0 + {match.end()} chars",
                 )
 
+            # JavaScript builtins
+            for match in re.finditer(javascript_builtin_pattern, content):
+                self.text_area.tag_add(
+                    "javascript_builtin",
+                    f"1.0 + {match.start()} chars",
+                    f"1.0 + {match.end()} chars",
+                )
+
             # String literals
             for match in re.finditer(string_literal_pattern, content):
                 self.text_area.tag_add(
@@ -527,6 +515,27 @@ class HTMLEditor:
                     f"1.0 + {match.end()} chars",
                 )
 
+            # HTML comments
+            for match in re.finditer(html_comment_pattern, content):
+                self.text_area.tag_add(
+                    "html_comment",
+                    f"1.0 + {match.start()} chars",
+                    f"1.0 + {match.end()} chars",
+                )
+
+            # JavaScript comments
+            for match in re.finditer(r"//.*?$", content, re.MULTILINE):
+                start_index = match.start()
+                if (
+                    not content[max(0, start_index - 7) : start_index]
+                    .strip()
+                    .endswith(("http:", "https:"))
+                ):
+                    self.text_area.tag_add(
+                        "js_comment",
+                        f"1.0 + {match.start()} chars",
+                        f"1.0 + {match.end()} chars",
+                    )
 
             # Configure tag colors (Edit this to change colors to your needs)
             if self.mode == "dark":
@@ -538,6 +547,7 @@ class HTMLEditor:
                 self.text_area.tag_config("javascript_function", foreground="#ffcc00")  # Yellow orange
                 self.text_area.tag_config("javascript_variable", foreground="#00ff00")  # Lime
                 self.text_area.tag_config("javascript_keyword", foreground="#ff0066")  # Red
+                self.text_area.tag_config("javascript_builtin", foreground="#bbff00")  # Dark green
                 self.text_area.tag_config("string_literal", foreground="#ff9933")  # Orange
                 self.text_area.tag_config("integer", foreground="#ffcc00")  # Yellow orange
                 self.text_area.tag_config("px_value", foreground="#ffcc00")  # Yellow orange
@@ -551,6 +561,7 @@ class HTMLEditor:
                 self.text_area.tag_config("javascript_function", foreground="#ff5e00")  # Dark orange
                 self.text_area.tag_config("javascript_variable", foreground="#19d677")  # Blue
                 self.text_area.tag_config("javascript_keyword", foreground="#ff0000")  # Red
+                self.text_area.tag_config("javascript_builtin", foreground="#00cc00")  # Dark green
                 self.text_area.tag_config("string_literal", foreground="#cc6600")  # Brown
                 self.text_area.tag_config("integer", foreground="#1dbb2a")  # Blue
                 self.text_area.tag_config("px_value", foreground="#1dbb2a")  # Blue
@@ -564,6 +575,7 @@ class HTMLEditor:
                 self.text_area.tag_config("javascript_function", foreground="#ffcc00")  # Yellow orange
                 self.text_area.tag_config("javascript_variable", foreground="#00ff00")  # Lime
                 self.text_area.tag_config("javascript_keyword", foreground="#ff0066")  # Red
+                self.text_area.tag_config("javascript_builtin", foreground="#00cc00")  # Dark green
                 self.text_area.tag_config("string_literal", foreground="#ff9933")  # Orange
                 self.text_area.tag_config("integer", foreground="#ffcc00")  # Yellow orange
                 self.text_area.tag_config("px_value", foreground="#ffcc00")  # Yellow orange
@@ -577,6 +589,7 @@ class HTMLEditor:
                 self.text_area.tag_config("javascript_function", foreground="#808080")
                 self.text_area.tag_config("javascript_variable", foreground="#808080")
                 self.text_area.tag_config("javascript_keyword", foreground="#808080")
+                self.text_area.tag_config("javascript_builtin", foreground="#808080")
                 self.text_area.tag_config("string_literal", foreground="#000000")
                 self.text_area.tag_config("integer", foreground="#000000")
                 self.text_area.tag_config("px_value", foreground="#000000")

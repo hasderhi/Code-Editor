@@ -8,3 +8,8 @@ __pycache__/
 # Testing files
 test.py
 testing/
+# Internal
+# ***ATTENTION! DO NOT REMOVE /internal/recent_store.json FROM THE .gitignore OR PERSONAL INFORMATION COULD BE
+# EXPOSED! (filepaths, filenames)***
+internal/recent_store.json
+recent_store.json

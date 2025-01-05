@@ -1,5 +1,5 @@
 """
-# HTMLeditor v1.0.9 - Source
+# HTMLeditor v1.0.9 main module - Source
 
 This is my HTML, CSS, JavaScript and Markdown editor written in Python. 
 Even though it uses just one external library (Pillow for icons), 
@@ -26,7 +26,8 @@ try:
     import sys
     import os
     import webbrowser
-    import time
+    import datetime
+    import json
 
     if os.name == "nt":  # If system is win32, import ctypes and set flag to true
         import ctypes
@@ -50,13 +51,19 @@ except ImportError:
 
 
 #####################################
-# Set up appId
+# Set up appId, create necessary directories
 #####################################
 if win:  # If win flag true, set up id
     appid = "tkdev.htmleditor.he.1-0"
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(appid)
 
-
+try:
+    if not os.path.isdir("internal"):
+        os.makedirs("internal")
+except Exception as e:
+    print(f"Error creating internal directory: {e}")
+    messagebox.showerror("Error", f"Error creating internal directory. {e}")
+    sys.exit(1)
 #####################################
 # Main class
 #####################################
@@ -117,6 +124,9 @@ class HTMLEditor:
         self.root.bind(
             "<Control-o>", lambda event: self.open_document()
         )  # CTRL_O         >   Open Document
+        self.root.bind(
+            "<Control-O>", lambda event: self.open_recent()
+        )  # CTRL_O         >   Open Recent
         self.root.bind(
             "<Control-u>", lambda event: self.change_zoom()
         )  # CTRL_U         >   Zoom window
@@ -295,14 +305,14 @@ class HTMLEditor:
         self.update_syntax_highlighting()  # Init syntax highlighting
         self.auto_save() # Init auto save (Not active until toggled)
 
-        root.config(cursor="")
+        root.config(cursor="") # Remove busy cursor from root window (I have no idea why the config function isn't marked...)
 
 
     def set_icon(self):
         """Sets the application icon."""
         if pillow_imported:
             try:
-                icon = Image.open("icons/favicon.ico")
+                icon = Image.open("internal/icons/favicon.ico")
                 icon = icon.resize((16, 16))                # Resize to appropriate icon size
                 self.icon_image = ImageTk.PhotoImage(icon)  # Store the reference in the instance
                 self.root.iconphoto(True, self.icon_image)  # Set the icon
@@ -909,6 +919,7 @@ class HTMLEditor:
                     self.current_file_path = file_path
                     self.unsaved_changes = False  # Reset unsaved changes flag
                     self.update_title()  # Update title
+                    self.add_to_recent_files(file_path)
             else:
                 return
         except Exception as e:
@@ -955,6 +966,7 @@ class HTMLEditor:
                     self.current_file_path = file_path
                     self.unsaved_changes = False  # Reset unsaved changes flag
                     self.update_title()  # Update title
+                    self.add_to_recent_files(file_path)
                     self.text_area.config(state=DISABLED if self.safe_mode else NORMAL)  # Disable editing if in safe mode
             else:
                 return
@@ -983,7 +995,107 @@ class HTMLEditor:
         status = "enabled" if self.auto_save_enabled else "disabled"
         messagebox.showinfo("Auto Save", f"Auto save is now {status}.")
 
+    def open_recent(self):
+        """Opens a window to display recently opened files."""
+        try:
+            with open("internal/recent_store.json", "r") as file:
+                recent_files = json.load(file)
+        except FileNotFoundError:
+            recent_files = []
 
+        top = Toplevel(self.root)
+        top.title("Recently Opened Files")
+        top.geometry("800x800")
+        top.config(bg="#333333")
+        top.resizable(True, True)
+
+        title_label = Label(
+            top,
+            text="Recently Opened Files",
+            font=("TkDefaultFont", 18, "bold"),
+            fg="#ffffff",
+            bg="#333333",
+        )
+        title_label.pack(pady=10)
+
+        ttk.Separator(top, orient="horizontal").pack(fill="x", padx=10, pady=5)
+
+        frame = Frame(top, bg="#333333")
+        frame.pack(pady=10, padx=10, fill="both", expand=True)
+
+        for i, file in enumerate(recent_files):
+            file_button = Button(
+                frame,
+                text=f"{file['filename']} - {file['filepath']}\nOpened at: {file['time']}",
+                font=("TkDefaultFont", 12),
+                fg="#ffffff",
+                bg="#757575",
+                width=40,
+                relief="flat",
+                command=lambda filepath=file['filepath']: self.open_recent_file(filepath, top),
+            )
+            file_button.pack(pady=5, fill="x")
+
+        close_button = Button(
+            top,
+            text="Close",
+            font=("TkDefaultFont", 12),
+            fg="#ffffff",
+            bg="#ff0066",
+            width=10,
+            relief="flat",
+            command=top.destroy,
+        )
+        close_button.pack(pady=10)
+
+    def open_recent_file(self, filepath, top):
+        """Opens a recently opened file."""
+        self.open_document_from_path(filepath)
+        top.destroy()
+
+    def open_document_from_path(self, filepath):
+        """Opens a document from a file path."""
+        try:
+            with open(filepath, "r") as file:
+                text = file.read()
+                self.file_name = os.path.basename(filepath)
+                self.text_area.delete("1.0", END)
+                self.text_area.insert("1.0", text)
+                self.current_file_path = filepath
+                self.unsaved_changes = False  # Reset unsaved changes flag
+                self.update_title()  # Update title
+                self.text_area.config(state=DISABLED if self.safe_mode else NORMAL)  # Disable editing if in safe mode
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to open document: {str(e)}")
+
+    def add_to_recent_files(self, filepath):
+        """Adds the opened or saved file to the recent files list."""
+        recent_file = {
+            "filename": os.path.basename(filepath),
+            "filepath": os.path.abspath(filepath),
+            "time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        }
+
+        try:
+            if os.path.exists("internal/recent_store.json"):
+                with open("internal/recent_store.json", "r") as file:
+                    recent_files = json.load(file)
+            else:
+                recent_files = []
+
+            # Remove duplicates and keep the latest entry
+            recent_files = [file for file in recent_files if file['filepath'] != recent_file['filepath']]
+            recent_files.insert(0, recent_file)  # Add new file at the top
+
+            # Limit to the last 10 recent files
+            if len(recent_files) > 10:
+                recent_files = recent_files[:10]
+
+            with open("internal/recent_store.json", "w") as file:
+                json.dump(recent_files, file, indent=4)
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to update recent files: {str(e)}")
     #####################################
     # Open file in browser
     #####################################
@@ -1056,7 +1168,7 @@ class HTMLEditor:
 
         # Load and resize the logo
         try:
-            logo = Image.open("icons/logo.png")
+            logo = Image.open("internal/icons/logo.png")
             logo = logo.resize((50, 50))  # Resize to 50x50 pixels
             self.logo_image = ImageTk.PhotoImage(logo)  # Store the reference in the instance
             logo_label = Label(top, image=self.logo_image)

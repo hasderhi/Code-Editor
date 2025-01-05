@@ -1,6 +1,6 @@
 # HTML Editor
 
-![Html Editor logo](icons/logo.png)
+![Html Editor logo](internal/icons/logo.png)
 
 This is my HTML, CSS, JavaScript and Markdown editor written in Python. Even though it uses just one external library (Pillow for icons), it has some functions like syntax highlighting and tag completition for HTML, CSS, JavaScript and Markdown code, an autosave function and a function to run the code with one click directly in the program.
 
@@ -71,13 +71,13 @@ The editor will auto complete HTML tags and strings if you start typing them in 
 In the settings, you can switch between 4 themes:
 
 1. Dark mode (Default)
-![The editor in dark mode](assets/darkmode.png)
+![The editor in dark mode](internal/assets/darkmode.png)
 2. Light mode
-![The editor in light mode](assets/lightmode.png)
+![The editor in light mode](internal/assets/lightmode.png)
 3. High contrast mode
-![The editor in high contrast mode](assets/highcontrastmode.png)
+![The editor in high contrast mode](internal/assets/highcontrastmode.png)
 4. Black/White Mode
-![The editor in black/white mode](assets/bwmode.png)
+![The editor in black/white mode](internal/assets/bwmode.png)
 
 ## Additional information
 

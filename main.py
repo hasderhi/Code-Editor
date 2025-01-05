@@ -829,7 +829,7 @@ class HTMLEditor:
         # Function to load and insert a template
         def load_template(template_name):
             try:
-                with open(f"templates/{template_name}", "r") as file:
+                with open(f"internal/templates/{template_name}", "r") as file:
                     template_content = file.read()
                     cursor_index = self.text_area.index(INSERT)
                     self.text_area.insert(cursor_index, template_content)

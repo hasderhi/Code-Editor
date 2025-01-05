@@ -317,6 +317,7 @@ class HTMLEditor:
         "Highlights HTML, CSS, JS, and Markdown syntax in the code."
         # Clear previous tags
         self.text_area.tag_remove("html_tag", "1.0", END)
+        self.text_area.tag_remove("html_parameter", "1.0", END)
         self.text_area.tag_remove("css_class", "1.0", END)
         self.text_area.tag_remove("css_property", "1.0", END)
         self.text_area.tag_remove("javascript_function", "1.0", END)
@@ -425,6 +426,7 @@ class HTMLEditor:
             # HTML patterns
             html_tag_pattern = r"</?[\w][\w\-\/]*[^<>]*\/?>"         # Matches HTML tags
             html_comment_pattern = r"<!--.*?-->"                        # Matches HTML comments
+            html_parameter_pattern = r"(\s+)(\w+)(=)"                  # Matches HTML parameters (e.g., name="value")
 
             # CSS patterns
             css_class_pattern = r"(?:^|\s)\.[\w-]+"                     # Matches CSS classes
@@ -477,6 +479,14 @@ class HTMLEditor:
                     "html_tag",
                     f"1.0 + {match.start()} chars",
                     f"1.0 + {match.end()} chars",
+                )
+
+            # HTML parameters
+            for match in re.finditer(html_parameter_pattern, content):
+                self.text_area.tag_add(
+                    "html_parameter",
+                    f"1.0 + {match.start(2)} chars",
+                    f"1.0 + {match.end(2)} chars",
                 )
 
             # CSS classes
@@ -582,6 +592,7 @@ class HTMLEditor:
             # Configure tag colors (Edit this to change colors to your needs)
             if self.mode == "dark":
                 self.text_area.tag_config("html_tag", foreground="#66e0ff")                 # Light blue
+                self.text_area.tag_config("html_parameter", foreground="#ffcc00")           # Yellow orange
                 self.text_area.tag_config("html_comment", foreground="#009900")             # Dark green
                 self.text_area.tag_config("js_comment", foreground="#009900")               # Dark green
                 self.text_area.tag_config("css_class", foreground="#ff00ff")                # Pink
@@ -598,6 +609,7 @@ class HTMLEditor:
 
             if self.mode == "light":
                 self.text_area.tag_config("html_tag", foreground="#31a2e4")                 # Blue
+                self.text_area.tag_config("html_parameter", foreground="#b85300")           # Brown
                 self.text_area.tag_config("html_comment", foreground="#008000")             # Dark green
                 self.text_area.tag_config("js_comment", foreground="#008000")               # Dark green
                 self.text_area.tag_config("css_class", foreground="#ca32ca")                # Pink
@@ -614,6 +626,7 @@ class HTMLEditor:
 
             if self.mode == "high_contrast":
                 self.text_area.tag_config("html_tag", foreground="#66e0ff")                 # Light blue
+                self.text_area.tag_config("html_parameter", foreground="#ff0000")           # Red
                 self.text_area.tag_config("html_comment", foreground="#009900")             # Dark green
                 self.text_area.tag_config("js_comment", foreground="#009900")               # Dark green
                 self.text_area.tag_config("css_class", foreground="#ff3399")                # Pink
@@ -630,6 +643,7 @@ class HTMLEditor:
 
             if self.mode == "black_white":
                 self.text_area.tag_config("html_tag", foreground="#969696")
+                self.text_area.tag_config("html_parameter", foreground="#666666")
                 self.text_area.tag_config("html_comment", foreground="#585858")
                 self.text_area.tag_config("js_comment", foreground="#585858")
                 self.text_area.tag_config("css_class", foreground="#666666")
@@ -951,7 +965,7 @@ class HTMLEditor:
         """Updates the title of the window based on the current file path and unsaved changes status"""
         if self.current_file_path:  # Check if current_file_path is set
             if self.unsaved_changes:
-                self.root.title(f"HTML Editor - {os.path.basename(self.current_file_path)}*")
+                self.root.title(f"HTML Editor - {os.path.basename(self.current_file_path)} ⚪")
             else:
                 self.root.title(f"HTML Editor - {os.path.basename(self.current_file_path)}")
         else:

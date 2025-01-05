@@ -609,6 +609,7 @@ class HTMLEditor:
 
             if self.mode == "light":
                 self.text_area.tag_config("html_tag", foreground="#31a2e4")                 # Blue
+                self.text_area.tag_config("html_parameter", foreground="#b85300")           # Brown
                 self.text_area.tag_config("html_comment", foreground="#008000")             # Dark green
                 self.text_area.tag_config("js_comment", foreground="#008000")               # Dark green
                 self.text_area.tag_config("css_class", foreground="#ca32ca")                # Pink
@@ -625,6 +626,7 @@ class HTMLEditor:
 
             if self.mode == "high_contrast":
                 self.text_area.tag_config("html_tag", foreground="#66e0ff")                 # Light blue
+                self.text_area.tag_config("html_parameter", foreground="#ff0000")           # Red
                 self.text_area.tag_config("html_comment", foreground="#009900")             # Dark green
                 self.text_area.tag_config("js_comment", foreground="#009900")               # Dark green
                 self.text_area.tag_config("css_class", foreground="#ff3399")                # Pink
@@ -641,6 +643,7 @@ class HTMLEditor:
 
             if self.mode == "black_white":
                 self.text_area.tag_config("html_tag", foreground="#969696")
+                self.text_area.tag_config("html_parameter", foreground="#666666")
                 self.text_area.tag_config("html_comment", foreground="#585858")
                 self.text_area.tag_config("js_comment", foreground="#585858")
                 self.text_area.tag_config("css_class", foreground="#666666")

@@ -35,7 +35,7 @@ In the main window, start writing your code. The editor will mark keywords, vari
 
 In the menu bar, you will find the following buttons:
 
-- HTML Editor 1.0 (This opens an about window with informations about the program)
+- HTML Editor (This opens an about window with informations about the program)
 - New (This opens a new window with a new file)
 - Save as (This saves the current document to a specified file path)
 - Save (This saves changes to the document; will prompt for a file path if the file was not saved previously)

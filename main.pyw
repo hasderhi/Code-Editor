@@ -1,5 +1,5 @@
 """
-# HTMLeditor v1.0.9 main module - Source
+# HTMLeditor v1.1.0 main module - Source
 
 This is my HTML, CSS, JavaScript and Markdown editor written in Python. 
 Even though it uses just one external library (Pillow for icons), 
@@ -829,7 +829,7 @@ class HTMLEditor:
         # Function to load and insert a template
         def load_template(template_name):
             try:
-                with open(f"templates/{template_name}", "r") as file:
+                with open(f"internal/templates/{template_name}", "r") as file:
                     template_content = file.read()
                     cursor_index = self.text_area.index(INSERT)
                     self.text_area.insert(cursor_index, template_content)
@@ -1178,7 +1178,7 @@ class HTMLEditor:
             Label(top, text="Logo not available", fg="#ffffff", bg="#333333").pack()
 
         Label(top, text="HTML Editor", font=("TkDefaultFont", 15, "bold"),fg="#ffffff", bg="#333333").pack(pady=5)
-        Label(top, text="Version 1.0", fg="#ffffff", bg="#333333").pack()
+        Label(top, text="Version 1.1", fg="#ffffff", bg="#333333").pack()
         Label(top, text="Copyright (c) 2024-2025", fg="#ffffff", bg="#333333").pack()
         Label(top, text="Author: Tobias Kisling", fg="#ffffff", bg="#333333").pack()
 

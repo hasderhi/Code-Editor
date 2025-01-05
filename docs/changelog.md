@@ -67,4 +67,9 @@
 
 - ToDo: Fix further errors in the syntax highlighting
 
+### 1.1.0 (latest release)
+
+- Change: Added open recent functions to the editor (call by CTRL-SHIFT-O)
+- Change: Mayor improvments in syntax highlighting
+
 # tk_dev - Software with passion!

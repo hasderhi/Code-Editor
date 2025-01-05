@@ -85,7 +85,7 @@ For more information, please see ```docs/guide.html```
 
 Written by Tobias Kisling
 
-Version 1.0
+Version 1.1
 
 This software is released under the MIT-License. For more information please see the ```license.md```!
 

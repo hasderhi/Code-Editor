@@ -459,7 +459,7 @@ class HTMLEditor:
             px_value_pattern = (r'(?<![<"\'])\b\d+px\b(?![>\'"])')  # Matches numerals followed by 'px'
 
             # Operator and brace pattern
-            operator_pattern = r"[+\-<>\=\(\)\{\}\[\]\*\%\|]"
+            operator_pattern = r"[+\-\=\(\)\{\}\[\]\*\%\|]"
 
             # HTML comments
             for match in re.finditer(html_comment_pattern, content):

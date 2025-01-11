@@ -8,6 +8,7 @@ __pycache__/
 # Testing files
 test.py
 testing/
+conv/
 # Internal
 # ***ATTENTION! DO NOT REMOVE /internal/recent_store.json FROM THE .gitignore OR PERSONAL INFORMATION COULD BE
 # EXPOSED! (filepaths, filenames)***

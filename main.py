@@ -313,7 +313,7 @@ class HTMLEditor:
         if pillow_imported:
             try:
                 icon = Image.open("internal/icons/favicon.ico")
-                icon = icon.resize((16, 16))                # Resize to appropriate icon size
+                icon = icon.resize((250, 250))              # Resize to appropriate icon size
                 self.icon_image = ImageTk.PhotoImage(icon)  # Store the reference in the instance
                 self.root.iconphoto(True, self.icon_image)  # Set the icon
             except Exception as e:

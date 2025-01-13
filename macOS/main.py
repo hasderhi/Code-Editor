@@ -101,46 +101,46 @@ class HTMLEditor:
         # Bind keys on functions
         #####################################
         self.root.bind(
-            "<Control-s>", lambda event: self.save_changes()
+            "<Command-s>", lambda event: self.save_changes()
         )  # CTRL_S         >   Save
         self.root.bind(
-            "<Control-S>", lambda event: self.save_document()
+            "<Command-S>", lambda event: self.save_document()
         )  # CTRL_SHIFT_S   >   Save as
         self.root.bind(
-            "<Control-n>", lambda event: self.new_document()
+            "<Command-n>", lambda event: self.new_document()
         )  # CTRL_N         >   New Document
         self.root.bind(
-            "<Control-r>", lambda event: self.open_document_in_browser()
+            "<Command-r>", lambda event: self.open_document_in_browser()
         )  # CTRL_R         >   "Run" Document
         self.root.bind(
-            "<Control-o>", lambda event: self.open_document()
+            "<Command-o>", lambda event: self.open_document()
         )  # CTRL_O         >   Open Document
         self.root.bind(
-            "<Control-O>", lambda event: self.open_recent()
+            "<Command-O>", lambda event: self.open_recent()
         )  # CTRL_O         >   Open Recent
         self.root.bind(
-            "<Control-u>", lambda event: self.change_zoom()
+            "<Command-u>", lambda event: self.change_zoom()
         )  # CTRL_U         >   Zoom window
         self.root.bind(
-            "<Control-plus>", lambda event: self.increase_font_size()
+            "<Command-plus>", lambda event: self.increase_font_size()
         )  # CTRL_+         >   Zoom +
         self.root.bind(
-            "<Control-minus>", lambda event: self.decrease_font_size()
+            "<Command-minus>", lambda event: self.decrease_font_size()
         )  # CTRL_-         >   Zoom -
         self.root.bind(
-            "<Control-f>", lambda event: self.find_replace()
+            "<Command-f>", lambda event: self.find_replace()
         )  # CTRL_F         >   Find and Replace
         self.root.bind(
-            "<Control-h>", lambda event: self.insert_html_template_01()
+            "<Command-h>", lambda event: self.insert_html_template_01()
             )  # CTRL_H     >   Insert HTML Template 1
         self.root.bind(
-            "<Control-H>", lambda event: self.insert_html_template_02()
+            "<Command-H>", lambda event: self.insert_html_template_02()
             )  # CTRL_SHIFT_H     >   Insert HTML Template 2
         self.root.bind(
-            "<Control-p>", lambda event: self.insert_html_centered_div()
+            "<Command-p>", lambda event: self.insert_html_centered_div()
             )  # CTRL_P    >   Insert HTML Centered Div
         self.root.bind(
-            "<Control-t>", lambda event: self.open_template()
+            "<Command-t>", lambda event: self.open_template()
         )
         
         self.root.bind(

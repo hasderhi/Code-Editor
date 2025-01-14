@@ -1,5 +1,5 @@
 """
-# HTMLeditor v1.1.0 main module - Source
+# HTMLeditor v1.1.1 main module - Source
 
 This is my HTML, CSS, JavaScript and Markdown editor written in Python. 
 Even though it uses just one external library (Pillow for icons), 
@@ -313,7 +313,7 @@ class HTMLEditor:
         if pillow_imported:
             try:
                 icon = Image.open("internal/icons/favicon.ico")
-                icon = icon.resize((16, 16))                # Resize to appropriate icon size
+                icon = icon.resize((250, 250))              # Resize to appropriate icon size
                 self.icon_image = ImageTk.PhotoImage(icon)  # Store the reference in the instance
                 self.root.iconphoto(True, self.icon_image)  # Set the icon
             except Exception as e:

@@ -1,5 +1,5 @@
 """
-# HTMLeditor v1.1.0 main module for macOS - Source
+# HTMLeditor v1.1.1 main module for macOS - Source
 
 This is my HTML, CSS, JavaScript and Markdown editor written in Python. 
 Even though it uses just one external library (Pillow for icons), 

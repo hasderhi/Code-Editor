@@ -60,16 +60,20 @@
 - Change: Organized the repo
 - Change: Rewrote the readme/docs to include the changes from v1.0.7
 
-### 1.0.9 (latest release)
+### 1.0.9
 
 - Change: Improved the GUI of the main, settings, zoom and find/replace window
 - Change: Fixed an issue with the syntax higlighting function marking code as function that was not a function
 
 - ToDo: Fix further errors in the syntax highlighting
 
-### 1.1.0 (latest release)
+### 1.1.0
 
 - Change: Added open recent functions to the editor (call by CTRL-SHIFT-O)
-- Change: Mayor improvments in syntax highlighting
+- Change: Mayor improvements in syntax highlighting
+
+### 1.1.1 (latest release)
+
+- Change: Added optimized macOS version
 
 # tk_dev - Software with passion!

@@ -9,8 +9,13 @@ __pycache__/
 test.py
 testing/
 conv/
+# output folder (from pyinstaller)
+# Please see the readme why there is no .exe or .dmg and how to build one!
+output/
+
 # Internal
-# ***ATTENTION! DO NOT REMOVE /internal/recent_store.json FROM THE .gitignore OR PERSONAL INFORMATION COULD BE
+# ***ATTENTION! DO NOT REMOVE /internal/recent_store.json 
+# FROM THE .gitignore OR PERSONAL INFORMATION COULD BE
 # EXPOSED! (filepaths, filenames)***
 internal/recent_store.json
 recent_store.json

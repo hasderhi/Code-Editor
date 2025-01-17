@@ -26,6 +26,30 @@ Run the program with ```python 3.x```
 - Run the ```.py``` file for console access
 - Run the ```.pyw``` file for no console
 
+### Building .exe / .dmg
+
+The developer has chosen not to include an .exe or .dmg file to the repository.
+This is because of issues with antivirus software which sometimes falsely 
+detects malware in the pyInstaller bootloader.
+
+If you want to build an exe yourself, do the following:
+
+0. Download the latest release (And the Pillow library, assuming you are not building an .exe file because you cannot install Python.)
+1. Download auto_py_to_exe (Pyinstaller with GUI) with ```py -m pip install auto_py_to_exe```
+2. Run the following command in the terminal: ```py -m auto_py_to_exe```
+3. Set up pyinstaller as following:
+    - Set ```main.py``` or ```main.pyw``` as ```path to file```
+    - Make sure ```Onefile``` is set to ```one directory```
+    - Set ```Console window``` to ```Window based```
+    - Set ```Icon``` to the icon from ```internal/icons/favicon.ico``` (Optional)
+4. Convert .py to .exe
+5. Copy the ```internal``` folder from the repo into the output folder the .exe is located
+6. Run the .exe
+
+If you run into any problems, feel free to contact the developer at any time!
+Sadly, as I don't have enough experiency with pyinstaller on macOS to give detailed instructions,
+but pyinstaller *should* work with the python files from the ```macOS``` folder.
+
 ## Using the editor
 
 In the main window, start writing your code. The editor will mark keywords, variables, functions and more.

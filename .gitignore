@@ -2,13 +2,20 @@
 .hintrc
 .vscode
 .DS_Store
+
 # Python
 .pycache
 __pycache__/
+
 # Testing files
 test.py
 testing/
 conv/
+
+# Project planning folder
+project/
+projects/
+
 # output folder (from pyinstaller)
 # Please see the readme why there is no .exe or .dmg and how to build one!
 output/

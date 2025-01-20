@@ -1330,6 +1330,19 @@ class HTMLEditor:
             command=self.change_to_black_white_mode,
         ).pack(side=LEFT, padx=5)
 
+        button_frame1a = Frame(scrollable_frame, width=200, height=20, bg="#333333")
+        button_frame1a.pack(pady=10)
+
+        Button(
+            button_frame1a,
+            relief="flat",
+            text="Pride mode",
+            font=("TkDefaultFont"),
+            fg="#fbff00",
+            bg="#ff0000",
+            command=self.change_to_pride_mode,
+        ).pack(side=LEFT, padx=5)
+
         ttk.Separator(scrollable_frame, orient="horizontal").pack(fill="x", padx=10, pady=10)
 
         Label(
@@ -1608,6 +1621,24 @@ class HTMLEditor:
         self.viewButton.config(bg="#757575", fg="#f0f0f0")
         self.frButton.config(bg="#757575", fg="#f0f0f0")
         self.settingsbutton.config(bg="#757575", fg="#f0f0f0")
+
+    def change_to_pride_mode(self):
+        """Changes to pride mode"""
+        self.mode = "dark"  # Set mode
+        # Change root window bg/fg
+        self.root.config(bg="#2B2B2B")
+        self.text_area.config(bg="#333333", fg="#f0f0f0", insertbackground="#f0f0f0", selectbackground="#116891", inactiveselectbackground="#719cc4")
+
+        # Menu area button colors
+        self.infoButton.config(bg="#E40303", fg="#000000")
+        self.newButton.config(bg="#FF8C00", fg="#000000")
+        self.saveAsButton.config(bg="#FFED00", fg="#000000")
+        self.saveButton.config(bg="#008026", fg="#f0f0f0")
+        self.openButton.config(bg="#004CFF", fg="#f0f0f0")
+        self.runButton.config(bg="#732982", fg="#f0f0f0")
+        self.viewButton.config(bg="#D60270", fg="#f0f0f0")
+        self.frButton.config(bg="#9B4F96", fg="#f0f0f0")
+        self.settingsbutton.config(bg="#0038A8", fg="#f0f0f0")
 
     def change_to_high_contrast_mode(self):
         """Changes to high contrast mode"""

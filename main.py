@@ -48,13 +48,7 @@ try:
     pillow_imported = True
 except ImportError:
     pillow_imported = False
-try:
-    import server
-    server_imported = True
-except ImportError:
-    server_imported = False
-    messagebox.showwarning("Warning", "The server host module could not be imported\nThe ")
-
+    
 #####################################
 # Set up appId, create necessary directories
 #####################################

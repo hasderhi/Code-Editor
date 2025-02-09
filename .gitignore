@@ -9,12 +9,16 @@ __pycache__/
 
 # Testing files
 test.py
+tests/
 testing/
 conv/
 
 # Project planning folder
 project/
 projects/
+
+# Backups
+backup/
 
 # output folder (from pyinstaller)
 # Please see the readme why there is no .exe or .dmg and how to build one!

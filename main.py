@@ -80,6 +80,11 @@ class HTMLEditor:
 
         editor = HTMLEditor(root)
         root.protocol("WM_DELETE_WINDOW", editor.confirm_exit)  # Bind close event
+
+        # Check if a file path was passed as an argument
+        if len(sys.argv) > 1:
+            editor.open_document_from_path(sys.argv[1])
+
         root.mainloop()
 
     def __init__(self, root):

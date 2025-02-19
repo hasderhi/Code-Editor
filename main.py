@@ -96,6 +96,8 @@ class HTMLEditor:
         self.root.config(bg="#2B2B2B")
         self.root.resizable(True, True)
 
+        self.tab_index = []                         # Tab index
+        self.tab_counter = 0                        # Tab counter
         self.mode = "dark"                          # Default
         self.unsaved_changes = False                # Track changes
         self.safe_mode = False                      # Track if safe mode is enabled
@@ -879,6 +881,72 @@ class HTMLEditor:
     #####################################
     # Save, open, autosave functions, title bar update, safe mode, text modfied detector
     #####################################
+
+
+    
+
+    def new_tab(self):
+        
+        if "New Tab" in self.tab_index:
+            self.tab_index.append(f"New Tab_{self.tab_counter}")
+            self.tab_counter += 1
+        else:
+            self.tab_index.append(f"New Tab")
+            self.tab_counter += 1
+
+        # Create_tab with the latest element in tab_index
+        name = self.tab_index[-1]
+        self.create_tab(name)
+        
+
+
+
+
+
+
+
+    def create_tab(self, name):
+        tabname = name
+        self.tabname = Text(
+            self.root,
+            width=100,
+            height=50,
+            font=("Consolas", 13),
+            bg="#333333",
+            fg="#f0f0f0",
+            insertbackground="#f0f0f0",
+            undo=True,
+            autoseparators=True,
+            wrap=WORD,
+        )
+        self.tabname.pack(fill=BOTH, expand=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     def new_document(self):
         "Creates a new instance of HTMLEditor for a new window"
         new_root = Tk()

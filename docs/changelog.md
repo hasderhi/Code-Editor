@@ -72,8 +72,14 @@
 - Change: Added open recent functions to the editor (call by CTRL-SHIFT-O)
 - Change: Mayor improvements in syntax highlighting
 
-### 1.1.1 (latest release)
+### 1.1.1
 
 - Change: Added optimized macOS version
+
+### 1.1.2 (latest release)
+
+- Change: Added optimized Linux (Ubuntu) version
+- Change: Fixed issues with macOS and Windows versions
+- Change: Restructured the repository
 
 # tk_dev - Software with passion!

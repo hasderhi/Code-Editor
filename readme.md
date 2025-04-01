@@ -1,6 +1,6 @@
 # HTML Editor
 
-![Html Editor logo](internal/icons/logo.png)
+![Html Editor logo](icons/logo.png)
 
 This is my HTML, CSS, JavaScript and Markdown editor written in Python. Even though it uses just one external library (Pillow for icons), it has some functions like syntax highlighting and tag completition for HTML, CSS, JavaScript and Markdown code, an autosave function and a function to run the code with one click directly in the program.
 
@@ -23,28 +23,29 @@ If you wish to make changes or add new features, you can simply modify the Pytho
 
 Run the program with ```python 3.x```
 
-- Run the ```.py``` file for console access
-- Run the ```.pyw``` file for no console
+- Run the ```.py``` file for console access (Useful for debugging)
+- Run the ```.pyw``` file for no console    (Only one window, recommended)
 
-### Building .exe / .dmg
+### Building .exe / .dmg executables
 
 The developer has chosen not to include an .exe or .dmg file to the repository.
-This is because of issues with antivirus software which sometimes falsely 
+This is because of issues with antivirus software which sometimes falsely
 detects malware in the pyInstaller bootloader.
 
 If you want to build an exe yourself, do the following:
 
-0. Download the latest release (And the Pillow library, assuming you are not building an .exe file because you cannot install Python.)
-1. Download auto_py_to_exe (Pyinstaller with GUI) with ```py -m pip install auto_py_to_exe```
-2. Run the following command in the terminal: ```py -m auto_py_to_exe```
-3. Set up pyinstaller as following:
+0. Download the latest release (And the Pillow library, assuming you are not building an .exe file because you cannot install Python libraries.)
+1. Download auto_py_to_exe (Pyinstaller with GUI, recommended) with ```py -m pip install auto_py_to_exe```
+2. Open a terminal (Command prompt, CMD, Terminal, Console) in the directory the python file is located (*Important: Make sure you are exactly in the directory where the python files are or it will not work!*)
+3. Run the following command in the terminal: ```py -m auto_py_to_exe```
+4. Set up pyinstaller as following:
     - Set ```main.py``` or ```main.pyw``` as ```path to file```
     - Make sure ```Onefile``` is set to ```one directory```
     - Set ```Console window``` to ```Window based```
     - Set ```Icon``` to the icon from ```internal/icons/favicon.ico``` (Optional)
-4. Convert .py to .exe
-5. Copy the ```internal``` folder from the repo into the output folder the .exe is located
-6. Run the .exe
+5. Convert .py to .exe
+6. Copy the ```internal``` folder from the repo into the output folder the executable is located
+7. Run the .exe
 
 If you run into any problems, feel free to contact the developer at any time!
 Sadly, as I don't have enough experiency with pyinstaller on macOS to give detailed instructions,
@@ -75,7 +76,7 @@ The editor uses Python regular expressions to highlight HTML, CSS and JavaScript
 
 ### Auto Save
 
-If activated the editor will automatically save your changes every 10 seconds until disabled by clicking the button again. You can change the interval in line 547:
+If activated the editor will automatically save your changes every 10 seconds until disabled by clicking the button again. You can change the interval in the code:
 
 ```python
 def auto_save(self):
@@ -95,13 +96,13 @@ The editor will auto complete HTML tags and strings if you start typing them in 
 In the settings, you can switch between 4 themes:
 
 1. Dark mode (Default)
-![The editor in dark mode](internal/assets/darkmode.png)
+![The editor in dark mode](assets/darkmode.png)
 2. Light mode
-![The editor in light mode](internal/assets/lightmode.png)
+![The editor in light mode](assets/lightmode.png)
 3. High contrast mode
-![The editor in high contrast mode](internal/assets/highcontrastmode.png)
+![The editor in high contrast mode](/assets/highcontrastmode.png)
 4. Black/White Mode
-![The editor in black/white mode](internal/assets/bwmode.png)
+![The editor in black/white mode](assets/bwmode.png)
 
 ## Additional information
 

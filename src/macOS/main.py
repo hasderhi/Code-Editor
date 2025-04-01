@@ -155,16 +155,15 @@ class HTMLEditor:
         # Init widgets, set up text area
         #####################################
 
-        # Create a menubar
+        # Create menubar
         self.menubar = Menu(self.root)
 
-        # Create menus
         self.file_menu = Menu(self.menubar, tearoff=0)
+        self.find_replace_menu = Menu(self.menubar, tearoff=0)
         self.view_menu = Menu(self.menubar, tearoff=0)
         self.settings_menu = Menu(self.menubar, tearoff=0)
         self.help_menu = Menu(self.menubar, tearoff=0)
 
-        # Add menu items
         self.file_menu.add_command(label="New", command=self.new_document)
         self.file_menu.add_command(label="Save as", command=self.save_document)
         self.file_menu.add_command(label="Save", command=self.save_changes)
@@ -173,24 +172,24 @@ class HTMLEditor:
         self.file_menu.add_separator()
         self.file_menu.add_command(label="Exit", command=self.confirm_exit)
 
+        self.find_replace_menu.add_command(label="Find/Replace", command=self.find_replace)
+
         self.view_menu.add_command(label="Zoom", command=self.change_zoom)
-        self.view_menu.add_command(label="Find/Replace", command=self.find_replace)
 
         self.settings_menu.add_command(label="Settings", command=self.settings_window)
 
         self.help_menu.add_command(label="About", command=self.info_window)
         self.help_menu.add_command(label="License", command=self.license_window)
 
-        # Add menus to the menubar
         self.menubar.add_cascade(label="File", menu=self.file_menu)
+        self.menubar.add_cascade(label="Find/Replace", menu=self.find_replace_menu)
         self.menubar.add_cascade(label="View", menu=self.view_menu)
         self.menubar.add_cascade(label="Settings", menu=self.settings_menu)
         self.menubar.add_cascade(label="Help", menu=self.help_menu)
 
-        # Set the menubar
         self.root.config(menu=self.menubar)
 
-        # Create the text area
+        # Create text area
         self.text_area = Text(
             self.root,
             width=100,
@@ -213,7 +212,7 @@ class HTMLEditor:
         self.update_syntax_highlighting()  # Init syntax highlighting
         self.auto_save() # Init auto save (Not active until toggled)
 
-        root.config(cursor="") # Remove busy cursor from root window (I have no idea why the config function isn't marked...)
+        root.config(cursor="") # Remove busy cursor from root window
 
 
     def set_icon(self):
@@ -1070,7 +1069,7 @@ class HTMLEditor:
         except Exception as e:
             Label(top, text="Logo not available", fg="#ffffff", bg="#333333").pack()
 
-        Label(top, text="HTML Editor", font=("TkDefaultFont", 15, "bold"),fg="#ffffff", bg="#333333").pack(pady=5)
+        Label(top, text="HTML Editor\nmacOS version", font=("TkDefaultFont", 15, "bold"),fg="#ffffff", bg="#333333").pack(pady=5)
         Label(top, text="Version 1.1", fg="#ffffff", bg="#333333").pack()
         Label(top, text="Copyright (c) 2024-2025", fg="#ffffff", bg="#333333").pack()
         Label(top, text="Author: Tobias Kisling", fg="#ffffff", bg="#333333").pack()
@@ -1079,7 +1078,7 @@ class HTMLEditor:
         """Creates a toplevel window with the license"""
         top = Toplevel(self.root)
         top.title("License")
-        top.geometry("800x800")
+        top.geometry("600x400")
         top.config(bg="#333333")
         top.resizable(False, False)
 
@@ -1103,29 +1102,21 @@ class HTMLEditor:
             fg="#ffffff",
             bg="#333333",
             text=
-            """Permission is hereby granted, free of charge, 
-            to any person obtaining a copy of this software 
-            and associated documentation files (the 'Software'), 
-            to deal in the Software without restriction, 
-            including without limitation the rights to use,
-            copy, modify, merge, publish, distribute, sublicense,
-            and/or sell copies of the Software, and to permit 
-            persons to whom the Software is furnished to do so, 
+            """Permission is hereby granted, free of charge, to any person obtaining a copy of this software 
+            and associated documentation files (the 'Software'), to deal in the Software without restriction, 
+            including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
+            and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, 
             subject to the following conditions:
             
-            The above copyright notice and this permission notice 
-            shall be included in all copies or 
-            substantial portions of the Software.
+            The above copyright notice and this permission notice shall be
+            included in all copies or substantial portions of the Software.
             
-            THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY 
-            OF ANY KIND, EXPRESS OR IMPLIED,INCLUDING BUT NOT 
-            LIMITED TO THE WARRANTIES OF MERCHANTABILITY
-            FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-            IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS 
-            BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-            WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-            ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
-            SOFTWARE ORTHE USE OR OTHER DEALINGS IN THE SOFTWARE.
+            THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, 
+            EXPRESS OR IMPLIED,INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY
+            FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
+            OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER 
+            IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,ARISING FROM, OUT OF OR IN CONNECTION
+            WITH THE SOFTWARE OR\nTHE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
             HTML5 Logo by <https://www.w3.org/>""",
@@ -1135,9 +1126,9 @@ class HTMLEditor:
         """Creates a toplevel window with settings"""
         top = Toplevel(self.root)
         top.title("Settings")
-        top.geometry("440x800")
+        top.geometry("440x500")
         top.config(bg="#333333")
-        top.resizable(True, True)
+        top.resizable(False, True)
 
         canvas = Canvas(top, bg="#333333", highlightthickness=0)
         scrollable_frame = Frame(canvas, bg="#333333")

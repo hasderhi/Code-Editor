@@ -977,7 +977,7 @@ class HTMLEditor:
         """Updates the title of the window based on the current file path and unsaved changes status"""
         if self.current_file_path:  # Check if current_file_path is set
             if self.unsaved_changes:
-                self.root.title(f"HTML Editor - {os.path.basename(self.current_file_path)} ⚪")
+                self.root.title(f"HTML Editor - {os.path.basename(self.current_file_path)} *")
             else:
                 self.root.title(f"HTML Editor - {os.path.basename(self.current_file_path)}")
         else:
@@ -1490,7 +1490,6 @@ class HTMLEditor:
         find_replace_window.geometry("400x200")
         find_replace_window.config(bg="#333333")
 
-        # Create labels and entry fields
         Label(find_replace_window, text="Find:", bg="#333333", fg="#ffffff").pack(
             pady=10
         )
@@ -1503,22 +1502,21 @@ class HTMLEditor:
         replace_entry = Entry(find_replace_window, width=40)
         replace_entry.pack(pady=5)
 
-        # Function to perform find and replace
         def perform_find_replace():
             find_text = find_entry.get()
             replace_text = replace_entry.get()
 
-            # Check if the find_text is empty
+            # Check if find_text is empty
             if not find_text:
                 messagebox.showwarning("Input Error", "Please enter text to find.")
-                return  # Exit the function if no text is provided
+                return  # Exit function if no text is provided
 
             content = self.text_area.get("1.0", END)
 
-            # Clear previous highlights
+            # Clear prev highlights
             self.text_area.tag_remove("highlight", "1.0", END)
 
-            # Search for the text and highlight matches
+            # Search for text and highlight matches
             start_index = 0
             matches = 0
 
@@ -1533,14 +1531,14 @@ class HTMLEditor:
                     f"1.0 + {start_index} chars",
                     f"1.0 + {end_index} chars",
                 )
-                start_index += len(find_text)  # Move past the last found match
+                start_index += len(find_text)  # Move past last found match
 
-            # Update the text area to reflect the highlights
+            # Update text area to show highlights
             self.text_area.tag_config(
                 "highlight", background="#ffcc00"
             )  # Highlight color
             self.text_area.mark_set("insert", "1.0")  # Reset cursor position
-            self.text_area.see("1.0")  # Scroll to the top
+            self.text_area.see("1.0")  # Scroll to top
 
             # Show number of matches found
             messagebox.showinfo("Find Results", f"Found {matches} match(es).")
@@ -1551,17 +1549,14 @@ class HTMLEditor:
                 self.text_area.delete("1.0", END)
                 self.text_area.insert("1.0", new_content)
 
-        # Function to clear highlights when the window is closed
         def clear_highlights():
             self.text_area.tag_remove("highlight", "1.0", END)
 
-        # Bind the clear_highlights function to the window's destroy event
         find_replace_window.protocol(
             "WM_DELETE_WINDOW",
             lambda: (clear_highlights(), find_replace_window.destroy()),
         )
 
-        # Create a button to execute the find and replace
         replace_button = Button(
             find_replace_window,
             text="Find and Replace",
@@ -1572,7 +1567,6 @@ class HTMLEditor:
         )
         replace_button.pack(pady=20)
 
-        # Create a button to close the window
         close_button = Button(
             find_replace_window,
             text="Close",

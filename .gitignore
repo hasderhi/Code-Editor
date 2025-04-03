@@ -3,6 +3,9 @@
 .vscode
 .DS_Store
 
+# Development
+dev/
+
 # Python
 .pycache
 __pycache__/

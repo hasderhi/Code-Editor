@@ -108,12 +108,12 @@ In the settings, you can switch between 4 themes:
 
 For more information, please see ```docs/guide.html```
 
-Written by Tobias Kisling
+Written by Annabeth Kisling
 
 Version 1.1
 
 This software is released under the MIT-License. For more information please see the ```license.md```!
 
-You can reach me by mail (<tobias.kisling@icloud.com>) or on github (<https://github.com/hasderhi>).
+You can reach me by mail (<annabeth@tk-dev-software.com>) or on github (<https://github.com/hasderhi>).
 
 # tk_dev - Software with passion!
